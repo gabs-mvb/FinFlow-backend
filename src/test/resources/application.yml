@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:finflow;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+finflow:
+  security:
+    api-key: test-api-key
+  open-finance:
+    provider: disabled
+

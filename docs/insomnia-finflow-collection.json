@@ -1,0 +1,882 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-08-28T12:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2024.5.0",
+  "resources": [
+    {
+      "_id": "wrk_finflow",
+      "parentId": null,
+      "modified": 1756382400000,
+      "name": "FinFlow API",
+      "description": "Coleção de endpoints da API FinFlow para uso no Insomnia.",
+      "scope": "collection",
+      "type": "workspace"
+    },
+    {
+      "_id": "env_finflow",
+      "parentId": "wrk_finflow",
+      "modified": 1756382400000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8080",
+        "api_key": "troque-por-um-segredo-forte"
+      },
+      "dataPropertyOrder": {
+        "base_url": 0,
+        "api_key": 1
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 0,
+      "type": "environment"
+    },
+    {
+      "_id": "fld_public",
+      "parentId": "wrk_finflow",
+      "modified": 1756382400000,
+      "name": "Público",
+      "description": "Endpoints públicos.",
+      "environment": {},
+      "metaSortKey": -1000000,
+      "type": "request_group"
+    },
+    {
+      "_id": "fld_profile",
+      "parentId": "wrk_finflow",
+      "modified": 1756382400000,
+      "name": "Perfil",
+      "description": "Perfil financeiro do usuário.",
+      "environment": {},
+      "metaSortKey": -900000,
+      "type": "request_group"
+    },
+    {
+      "_id": "fld_accounts",
+      "parentId": "wrk_finflow",
+      "modified": 1756382400000,
+      "name": "Contas",
+      "description": "Contas consolidadas por finalidade.",
+      "environment": {},
+      "metaSortKey": -800000,
+      "type": "request_group"
+    },
+    {
+      "_id": "fld_transactions",
+      "parentId": "wrk_finflow",
+      "modified": 1756382400000,
+      "name": "Transações",
+      "description": "Importação e listagem de transações.",
+      "environment": {},
+      "metaSortKey": -700000,
+      "type": "request_group"
+    },
+    {
+      "_id": "fld_obligations",
+      "parentId": "wrk_finflow",
+      "modified": 1756382400000,
+      "name": "Obrigações",
+      "description": "Obrigações fixas.",
+      "environment": {},
+      "metaSortKey": -600000,
+      "type": "request_group"
+    },
+    {
+      "_id": "fld_debts",
+      "parentId": "wrk_finflow",
+      "modified": 1756382400000,
+      "name": "Dívidas",
+      "description": "Dívidas de longo e alto custo.",
+      "environment": {},
+      "metaSortKey": -500000,
+      "type": "request_group"
+    },
+    {
+      "_id": "fld_goals",
+      "parentId": "wrk_finflow",
+      "modified": 1756382400000,
+      "name": "Metas",
+      "description": "Metas financeiras.",
+      "environment": {},
+      "metaSortKey": -400000,
+      "type": "request_group"
+    },
+    {
+      "_id": "fld_portfolio",
+      "parentId": "wrk_finflow",
+      "modified": 1756382400000,
+      "name": "Carteira",
+      "description": "Carteira e alocações alvo.",
+      "environment": {},
+      "metaSortKey": -300000,
+      "type": "request_group"
+    },
+    {
+      "_id": "fld_openfinance",
+      "parentId": "wrk_finflow",
+      "modified": 1756382400000,
+      "name": "Open Finance",
+      "description": "Consentimentos e status do módulo Open Finance.",
+      "environment": {},
+      "metaSortKey": -200000,
+      "type": "request_group"
+    },
+    {
+      "_id": "fld_plans",
+      "parentId": "wrk_finflow",
+      "modified": 1756382400000,
+      "name": "Planos",
+      "description": "Geração e revisão do plano financeiro.",
+      "environment": {},
+      "metaSortKey": -100000,
+      "type": "request_group"
+    },
+    {
+      "_id": "fld_reports",
+      "parentId": "wrk_finflow",
+      "modified": 1756382400000,
+      "name": "Relatórios",
+      "description": "Relatórios mensais.",
+      "environment": {},
+      "metaSortKey": 0,
+      "type": "request_group"
+    },
+    {
+      "_id": "req_health",
+      "parentId": "fld_public",
+      "modified": 1756382400000,
+      "name": "GET /actuator/health",
+      "description": "Health check público da API.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/actuator/health",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 0,
+      "type": "request"
+    },
+    {
+      "_id": "req_info",
+      "parentId": "fld_public",
+      "modified": 1756382400000,
+      "name": "GET /actuator/info",
+      "description": "Informações públicas da aplicação.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/actuator/info",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 1,
+      "type": "request"
+    },
+    {
+      "_id": "req_profile_put",
+      "parentId": "fld_profile",
+      "modified": 1756382400000,
+      "name": "PUT /api/v1/profile",
+      "description": "Cria ou atualiza o perfil financeiro do usuário.",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/api/v1/profile",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"monthlyIncome\": {\n    \"amount\": 7600.00,\n    \"currency\": \"BRL\"\n  },\n  \"payDay\": 5,\n  \"essentialMonthlyExpenses\": {\n    \"amount\": 3500.00,\n    \"currency\": \"BRL\"\n  },\n  \"variableMonthlyBudget\": {\n    \"amount\": 1200.00,\n    \"currency\": \"BRL\"\n  },\n  \"minimumCashBuffer\": {\n    \"amount\": 500.00,\n    \"currency\": \"BRL\"\n  },\n  \"emergencyTargetMonths\": 6,\n  \"reserveContributionRate\": 0.10,\n  \"investmentContributionRate\": 0.10,\n  \"riskProfile\": \"MODERATE\",\n  \"autopilotMode\": \"COPILOT\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_profile_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória para rotas de negócio."
+        },
+        {
+          "id": "pair_profile_content_type",
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": "Tipo do payload JSON."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 0,
+      "type": "request"
+    },
+    {
+      "_id": "req_profile_get",
+      "parentId": "fld_profile",
+      "modified": 1756382400000,
+      "name": "GET /api/v1/profile",
+      "description": "Busca o perfil financeiro atual.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/profile",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_profile_get_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "type": "request"
+    },
+    {
+      "_id": "req_accounts_post",
+      "parentId": "fld_accounts",
+      "modified": 1756382400000,
+      "name": "POST /api/v1/accounts",
+      "description": "Cria uma conta financeira.",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/accounts",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"institution\": \"Banco do Brasil\",\n  \"externalId\": \"bb-001\",\n  \"name\": \"Conta Corrente\",\n  \"accountType\": \"CHECKING\",\n  \"purpose\": \"OPERATING\",\n  \"availableBalance\": {\n    \"amount\": 5200.00,\n    \"currency\": \"BRL\"\n  },\n  \"lastSyncedAt\": \"2026-08-28T09:00:00Z\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_accounts_post_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        },
+        {
+          "id": "pair_accounts_post_content_type",
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": "Tipo do payload JSON."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 0,
+      "type": "request"
+    },
+    {
+      "_id": "req_accounts_get",
+      "parentId": "fld_accounts",
+      "modified": 1756382400000,
+      "name": "GET /api/v1/accounts",
+      "description": "Lista todas as contas.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/accounts",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_accounts_get_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "type": "request"
+    },
+    {
+      "_id": "req_accounts_balance_patch",
+      "parentId": "fld_accounts",
+      "modified": 1756382400000,
+      "name": "PATCH /api/v1/accounts/{id}/balance",
+      "description": "Atualiza o saldo de uma conta específica.",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/api/v1/accounts/11111111-1111-4111-8111-111111111111/balance",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"availableBalance\": {\n    \"amount\": 5800.00,\n    \"currency\": \"BRL\"\n  },\n  \"syncedAt\": \"2026-08-28T09:15:00Z\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_accounts_balance_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        },
+        {
+          "id": "pair_accounts_balance_content_type",
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": "Tipo do payload JSON."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 2,
+      "type": "request"
+    },
+    {
+      "_id": "req_transactions_import_post",
+      "parentId": "fld_transactions",
+      "modified": 1756382400000,
+      "name": "POST /api/v1/transactions/imports",
+      "description": "Importa um lote de transações com idempotência.",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/transactions/imports",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"accountId\": \"11111111-1111-4111-8111-111111111111\",\n  \"transactions\": [\n    {\n      \"externalId\": \"tx-001\",\n      \"type\": \"DEBIT\",\n      \"amount\": {\n        \"amount\": 125.45,\n        \"currency\": \"BRL\"\n      },\n      \"description\": \"Supermercado\",\n      \"merchant\": \"Mercado do Zé\",\n      \"category\": \"FOOD\",\n      \"occurredAt\": \"2026-08-20T12:30:00Z\"\n    },\n    {\n      \"externalId\": \"tx-002\",\n      \"type\": \"CREDIT\",\n      \"amount\": {\n        \"amount\": 3400.00,\n        \"currency\": \"BRL\"\n      },\n      \"description\": \"Salário\",\n      \"merchant\": null,\n      \"category\": \"INCOME\",\n      \"occurredAt\": \"2026-08-05T00:00:00Z\"\n    }\n  ]\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_transactions_import_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        },
+        {
+          "id": "pair_transactions_import_idem",
+          "name": "Idempotency-Key",
+          "value": "finflow-import-20260828-001",
+          "description": "Chave única por lote de importação."
+        },
+        {
+          "id": "pair_transactions_import_content_type",
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": "Tipo do payload JSON."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 0,
+      "type": "request"
+    },
+    {
+      "_id": "req_transactions_get",
+      "parentId": "fld_transactions",
+      "modified": 1756382400000,
+      "name": "GET /api/v1/transactions",
+      "description": "Lista transações em um intervalo informado.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/transactions",
+      "body": {},
+      "parameters": [
+        {
+          "id": "pair_transactions_from",
+          "name": "from",
+          "value": "2026-08-01T00:00:00Z",
+          "description": "Data/hora inicial."
+        },
+        {
+          "id": "pair_transactions_to",
+          "name": "to",
+          "value": "2026-08-31T23:59:59Z",
+          "description": "Data/hora final."
+        },
+        {
+          "id": "pair_transactions_category",
+          "name": "category",
+          "value": "FOOD",
+          "description": "Filtro opcional por categoria."
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_transactions_get_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "type": "request"
+    },
+    {
+      "_id": "req_obligations_post",
+      "parentId": "fld_obligations",
+      "modified": 1756382400000,
+      "name": "POST /api/v1/obligations",
+      "description": "Cria uma obrigação pendente.",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/obligations",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Aluguel\",\n  \"type\": \"HOUSING\",\n  \"amount\": {\n    \"amount\": 2300.00,\n    \"currency\": \"BRL\"\n  },\n  \"dueDate\": \"2026-09-05\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_obligations_post_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        },
+        {
+          "id": "pair_obligations_post_content_type",
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": "Tipo do payload JSON."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 0,
+      "type": "request"
+    },
+    {
+      "_id": "req_obligations_get",
+      "parentId": "fld_obligations",
+      "modified": 1756382400000,
+      "name": "GET /api/v1/obligations",
+      "description": "Lista obrigações ordenadas por vencimento.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/obligations",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_obligations_get_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "type": "request"
+    },
+    {
+      "_id": "req_obligations_paid_patch",
+      "parentId": "fld_obligations",
+      "modified": 1756382400000,
+      "name": "PATCH /api/v1/obligations/{id}/paid",
+      "description": "Marca uma obrigação como quitada.",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/api/v1/obligations/11111111-1111-4111-8111-111111111111/paid",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_obligations_paid_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 2,
+      "type": "request"
+    },
+    {
+      "_id": "req_debts_post",
+      "parentId": "fld_debts",
+      "modified": 1756382400000,
+      "name": "POST /api/v1/debts",
+      "description": "Cria uma dívida.",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/debts",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Cartão de crédito\",\n  \"type\": \"CREDIT_CARD\",\n  \"outstandingAmount\": {\n    \"amount\": 3200.00,\n    \"currency\": \"BRL\"\n  },\n  \"monthlyPayment\": {\n    \"amount\": 420.00,\n    \"currency\": \"BRL\"\n  },\n  \"annualEffectiveRate\": 0.38,\n  \"priority\": \"HIGH_COST\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_debts_post_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        },
+        {
+          "id": "pair_debts_post_content_type",
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": "Tipo do payload JSON."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 0,
+      "type": "request"
+    },
+    {
+      "_id": "req_debts_get",
+      "parentId": "fld_debts",
+      "modified": 1756382400000,
+      "name": "GET /api/v1/debts",
+      "description": "Lista dívidas cadastradas.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/debts",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_debts_get_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "type": "request"
+    },
+    {
+      "_id": "req_debts_paid_patch",
+      "parentId": "fld_debts",
+      "modified": 1756382400000,
+      "name": "PATCH /api/v1/debts/{id}/paid",
+      "description": "Marca uma dívida como quitada.",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/api/v1/debts/11111111-1111-4111-8111-111111111111/paid",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_debts_paid_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 2,
+      "type": "request"
+    },
+    {
+      "_id": "req_goals_post",
+      "parentId": "fld_goals",
+      "modified": 1756382400000,
+      "name": "POST /api/v1/goals",
+      "description": "Cria uma meta financeira.",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/goals",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Férias\",\n  \"targetAmount\": {\n    \"amount\": 8000.00,\n    \"currency\": \"BRL\"\n  },\n  \"currentAmount\": {\n    \"amount\": 2500.00,\n    \"currency\": \"BRL\"\n  },\n  \"targetDate\": \"2027-01-15\",\n  \"priority\": 2\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_goals_post_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        },
+        {
+          "id": "pair_goals_post_content_type",
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": "Tipo do payload JSON."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 0,
+      "type": "request"
+    },
+    {
+      "_id": "req_goals_get",
+      "parentId": "fld_goals",
+      "modified": 1756382400000,
+      "name": "GET /api/v1/goals",
+      "description": "Lista metas ordenadas por prioridade.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/goals",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_goals_get_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "type": "request"
+    },
+    {
+      "_id": "req_goals_progress_patch",
+      "parentId": "fld_goals",
+      "modified": 1756382400000,
+      "name": "PATCH /api/v1/goals/{id}/progress",
+      "description": "Atualiza o progresso de uma meta.",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/api/v1/goals/11111111-1111-4111-8111-111111111111/progress",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"currentAmount\": {\n    \"amount\": 5000.00,\n    \"currency\": \"BRL\"\n  }\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_goals_progress_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        },
+        {
+          "id": "pair_goals_progress_content_type",
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": "Tipo do payload JSON."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 2,
+      "type": "request"
+    },
+    {
+      "_id": "req_portfolio_put",
+      "parentId": "fld_portfolio",
+      "modified": 1756382400000,
+      "name": "PUT /api/v1/portfolio",
+      "description": "Substitui posições e alocações da carteira.",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/api/v1/portfolio",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"positions\": [\n    {\n      \"assetCode\": \"CASH\",\n      \"assetName\": \"Disponível\",\n      \"assetClass\": \"CASH\",\n      \"currentValue\": {\n        \"amount\": 1400.00,\n        \"currency\": \"BRL\"\n      }\n    },\n    {\n      \"assetCode\": \"ITUB4\",\n      \"assetName\": \"Itaú Unibanco\",\n      \"assetClass\": \"BRAZILIAN_EQUITY\",\n      \"currentValue\": {\n        \"amount\": 2500.00,\n        \"currency\": \"BRL\"\n      }\n    }\n  ],\n  \"targets\": [\n    {\n      \"assetClass\": \"CASH\",\n      \"targetPercentage\": 20.00,\n      \"minimumPercentage\": 10.00,\n      \"maximumPercentage\": 35.00\n    },\n    {\n      \"assetClass\": \"BRAZILIAN_EQUITY\",\n      \"targetPercentage\": 35.00,\n      \"minimumPercentage\": 20.00,\n      \"maximumPercentage\": 50.00\n    }\n  ]\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_portfolio_put_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        },
+        {
+          "id": "pair_portfolio_put_content_type",
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": "Tipo do payload JSON."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 0,
+      "type": "request"
+    },
+    {
+      "_id": "req_portfolio_get",
+      "parentId": "fld_portfolio",
+      "modified": 1756382400000,
+      "name": "GET /api/v1/portfolio",
+      "description": "Lê os ativos e alocações de carteira.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/portfolio",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_portfolio_get_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "type": "request"
+    },
+    {
+      "_id": "req_openfinance_status",
+      "parentId": "fld_openfinance",
+      "modified": 1756382400000,
+      "name": "GET /api/v1/open-finance/status",
+      "description": "Consulta o status da integração Open Finance.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/open-finance/status",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_openfinance_status_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 0,
+      "type": "request"
+    },
+    {
+      "_id": "req_openfinance_consents_put",
+      "parentId": "fld_openfinance",
+      "modified": 1756382400000,
+      "name": "PUT /api/v1/open-finance/consents",
+      "description": "Registra um consentimento de Open Finance.",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/api/v1/open-finance/consents",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"provider\": \"bcb\",\n  \"externalConsentId\": \"consent-001\",\n  \"institution\": \"Banco do Brasil\",\n  \"scopes\": [\"ACCOUNTS\", \"TRANSACTIONS\"],\n  \"status\": \"ACTIVE\",\n  \"expiresAt\": \"2027-08-28T12:00:00Z\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_openfinance_consents_put_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        },
+        {
+          "id": "pair_openfinance_consents_put_content_type",
+          "name": "Content-Type",
+          "value": "application/json",
+          "description": "Tipo do payload JSON."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "type": "request"
+    },
+    {
+      "_id": "req_openfinance_consents_get",
+      "parentId": "fld_openfinance",
+      "modified": 1756382400000,
+      "name": "GET /api/v1/open-finance/consents",
+      "description": "Lista consentimentos registrados.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/open-finance/consents",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_openfinance_consents_get_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 2,
+      "type": "request"
+    },
+    {
+      "_id": "req_plans_post",
+      "parentId": "fld_plans",
+      "modified": 1756382400000,
+      "name": "POST /api/v1/plans",
+      "description": "Gera o plano financeiro para uma data base.",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/plans",
+      "body": {},
+      "parameters": [
+        {
+          "id": "pair_plans_asof",
+          "name": "asOf",
+          "value": "2026-08-28",
+          "description": "Data base do cálculo do plano."
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_plans_post_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 0,
+      "type": "request"
+    },
+    {
+      "_id": "req_plans_latest_get",
+      "parentId": "fld_plans",
+      "modified": 1756382400000,
+      "name": "GET /api/v1/plans/latest",
+      "description": "Consulta o último plano financeiro gerado.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/plans/latest",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_plans_latest_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "type": "request"
+    },
+    {
+      "_id": "req_plans_actions_approve_patch",
+      "parentId": "fld_plans",
+      "modified": 1756382400000,
+      "name": "PATCH /api/v1/plans/actions/{id}/approve",
+      "description": "Aprova uma ação sugerida pelo plano.",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/api/v1/plans/actions/11111111-1111-4111-8111-111111111111/approve",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_plans_actions_approve_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 2,
+      "type": "request"
+    },
+    {
+      "_id": "req_plans_actions_reject_patch",
+      "parentId": "fld_plans",
+      "modified": 1756382400000,
+      "name": "PATCH /api/v1/plans/actions/{id}/reject",
+      "description": "Rejeita uma ação sugerida pelo plano.",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/api/v1/plans/actions/11111111-1111-4111-8111-111111111111/reject",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_plans_actions_reject_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 3,
+      "type": "request"
+    },
+    {
+      "_id": "req_reports_monthly_get",
+      "parentId": "fld_reports",
+      "modified": 1756382400000,
+      "name": "GET /api/v1/reports/monthly",
+      "description": "Gera o relatório mensal de fluxo de caixa.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/reports/monthly",
+      "body": {},
+      "parameters": [
+        {
+          "id": "pair_reports_year",
+          "name": "year",
+          "value": "2026",
+          "description": "Ano do relatório."
+        },
+        {
+          "id": "pair_reports_month",
+          "name": "month",
+          "value": "8",
+          "description": "Mês do relatório."
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_reports_api_key",
+          "name": "X-API-Key",
+          "value": "{{ _.api_key }}",
+          "description": "API key obrigatória."
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 0,
+      "type": "request"
+    }
+  ]
+}

@@ -1,0 +1,754 @@
+{
+  "info": {
+    "_postman_id": "95d28aa5-89f6-4ad9-a9d3-4e63c55d3dad",
+    "name": "FinFlow API",
+    "description": "Coleção de endpoints da API FinFlow para uso no Insomnia.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Público",
+      "description": "Endpoints públicos.",
+      "item": [
+        {
+          "name": "GET /actuator/health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/actuator/health",
+            "description": "Health check público da API.\n\n### Headers\n\nEste endpoint é público e não exige headers de autenticação nem de conteúdo.\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /actuator/info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/actuator/info",
+            "description": "Informações públicas da aplicação.\n\n### Headers\n\nEste endpoint é público e não exige headers de autenticação nem de conteúdo.\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Perfil",
+      "description": "Perfil financeiro do usuário.",
+      "item": [
+        {
+          "name": "PUT /api/v1/profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "description": "Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/profile",
+            "description": "Cria ou atualiza o perfil financeiro do usuário.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n| `Content-Type` | Sim | `application/json` | Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload. |\n\n### Body\n\n| Campo | Tipo | Obrigatório | Significado e regras |\n| --- | --- | --- | --- |\n| `monthlyIncome` | Objeto monetário | Sim | Renda mensal total usada como base do planejamento financeiro. |\n| `monthlyIncome.amount` | Decimal | Sim | Valor monetário não negativo, com até 17 dígitos inteiros e 2 casas decimais. Algumas operações exigem valor maior que zero. |\n| `monthlyIncome.currency` | String | Não (padrão `BRL`) | Código ISO 4217 de três letras, como `BRL`, `USD` ou `EUR`. |\n| `payDay` | Inteiro | Sim | Dia do mês em que a renda principal é recebida. Aceita valores de 1 a 28. |\n| `essentialMonthlyExpenses` | Objeto monetário | Sim | Total mensal de despesas essenciais, como moradia, alimentação básica e saúde. |\n| `essentialMonthlyExpenses.amount` | Decimal | Sim | Valor monetário não negativo, com até 17 dígitos inteiros e 2 casas decimais. Algumas operações exigem valor maior que zero. |\n| `essentialMonthlyExpenses.currency` | String | Não (padrão `BRL`) | Código ISO 4217 de três letras, como `BRL`, `USD` ou `EUR`. |\n| `variableMonthlyBudget` | Objeto monetário | Sim | Limite mensal planejado para despesas variáveis e discricionárias. |\n| `variableMonthlyBudget.amount` | Decimal | Sim | Valor monetário não negativo, com até 17 dígitos inteiros e 2 casas decimais. Algumas operações exigem valor maior que zero. |\n| `variableMonthlyBudget.currency` | String | Não (padrão `BRL`) | Código ISO 4217 de três letras, como `BRL`, `USD` ou `EUR`. |\n| `minimumCashBuffer` | Objeto monetário | Sim | Saldo mínimo que deve permanecer disponível para segurança operacional. |\n| `minimumCashBuffer.amount` | Decimal | Sim | Valor monetário não negativo, com até 17 dígitos inteiros e 2 casas decimais. Algumas operações exigem valor maior que zero. |\n| `minimumCashBuffer.currency` | String | Não (padrão `BRL`) | Código ISO 4217 de três letras, como `BRL`, `USD` ou `EUR`. |\n| `emergencyTargetMonths` | Inteiro | Não (padrão `6`) | Quantidade de meses de despesas que a reserva de emergência deve cobrir. Aceita de 1 a 24. |\n| `reserveContributionRate` | Decimal | Não (padrão `0.10`) | Fração da renda destinada à reserva. Aceita de 0 a 1; `0.10` representa 10%. |\n| `investmentContributionRate` | Decimal | Não (padrão `0.10`) | Fração da renda destinada a investimentos. Aceita de 0 a 1; `0.10` representa 10%. |\n| `riskProfile` | Enum | Não (padrão `CONSERVATIVE`) | Perfil de risco: `CONSERVATIVE`, `MODERATE`, `BOLD` ou `AGGRESSIVE`. |\n| `autopilotMode` | Enum | Não (padrão `OBSERVER`) | Nível de automação: `OBSERVER` apenas acompanha, `COPILOT` sugere ações e `AUTOPILOT` representa o modo mais automatizado. |",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"monthlyIncome\": {\n    \"amount\": 7600.00,\n    \"currency\": \"BRL\"\n  },\n  \"payDay\": 5,\n  \"essentialMonthlyExpenses\": {\n    \"amount\": 3500.00,\n    \"currency\": \"BRL\"\n  },\n  \"variableMonthlyBudget\": {\n    \"amount\": 1200.00,\n    \"currency\": \"BRL\"\n  },\n  \"minimumCashBuffer\": {\n    \"amount\": 500.00,\n    \"currency\": \"BRL\"\n  },\n  \"emergencyTargetMonths\": 6,\n  \"reserveContributionRate\": 0.10,\n  \"investmentContributionRate\": 0.10,\n  \"riskProfile\": \"MODERATE\",\n  \"autopilotMode\": \"COPILOT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/profile",
+            "description": "Busca o perfil financeiro atual.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Contas",
+      "description": "Contas consolidadas por finalidade.",
+      "item": [
+        {
+          "name": "POST /api/v1/accounts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "description": "Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/accounts",
+            "description": "Cria uma conta financeira.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n| `Content-Type` | Sim | `application/json` | Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload. |\n\n### Body\n\n| Campo | Tipo | Obrigatório | Significado e regras |\n| --- | --- | --- | --- |\n| `institution` | String | Sim | Nome da instituição financeira. Não pode ser vazio; máximo de 120 caracteres. |\n| `externalId` | String | Sim | Identificador da conta no sistema de origem. Máximo de 160 caracteres; a combinação com `institution` deve ser única. |\n| `name` | String | Sim | Nome amigável da conta. Não pode ser vazio; máximo de 120 caracteres. |\n| `accountType` | Enum | Sim | Tipo da conta: `CHECKING`, `SAVINGS`, `PAYMENT` ou `INVESTMENT`. |\n| `purpose` | Enum | Sim | Finalidade: `OPERATING`, `EMERGENCY_RESERVE`, `GOAL` ou `INVESTMENT`. |\n| `availableBalance` | Objeto monetário | Sim | Saldo disponível atual da conta. |\n| `availableBalance.amount` | Decimal | Sim | Valor monetário não negativo, com até 17 dígitos inteiros e 2 casas decimais. Algumas operações exigem valor maior que zero. |\n| `availableBalance.currency` | String | Não (padrão `BRL`) | Código ISO 4217 de três letras, como `BRL`, `USD` ou `EUR`. |\n| `lastSyncedAt` | Data/hora ISO 8601 | Não | Instante da última sincronização com a instituição, incluindo fuso, por exemplo `2026-08-28T09:00:00Z`. |",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"institution\": \"Banco do Brasil\",\n  \"externalId\": \"bb-001\",\n  \"name\": \"Conta Corrente\",\n  \"accountType\": \"CHECKING\",\n  \"purpose\": \"OPERATING\",\n  \"availableBalance\": {\n    \"amount\": 5200.00,\n    \"currency\": \"BRL\"\n  },\n  \"lastSyncedAt\": \"2026-08-28T09:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/accounts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/accounts",
+            "description": "Lista todas as contas.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /api/v1/accounts/{id}/balance",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "description": "Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/accounts/11111111-1111-4111-8111-111111111111/balance",
+            "description": "Atualiza o saldo de uma conta específica.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n| `Content-Type` | Sim | `application/json` | Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload. |\n\n### Body\n\n| Campo | Tipo | Obrigatório | Significado e regras |\n| --- | --- | --- | --- |\n| `availableBalance` | Objeto monetário | Sim | Novo saldo disponível. A moeda deve ser a mesma já cadastrada para a conta. |\n| `availableBalance.amount` | Decimal | Sim | Valor monetário não negativo, com até 17 dígitos inteiros e 2 casas decimais. Algumas operações exigem valor maior que zero. |\n| `availableBalance.currency` | String | Não (padrão `BRL`) | Código ISO 4217 de três letras, como `BRL`, `USD` ou `EUR`. |\n| `syncedAt` | Data/hora ISO 8601 | Não | Instante ao qual o saldo se refere. Quando omitido, a API usa o horário atual. |",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"availableBalance\": {\n    \"amount\": 5800.00,\n    \"currency\": \"BRL\"\n  },\n  \"syncedAt\": \"2026-08-28T09:15:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Transações",
+      "description": "Importação e listagem de transações.",
+      "item": [
+        {
+          "name": "POST /api/v1/transactions/imports",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "finflow-import-20260828-001",
+                "description": "Identificador único do lote de importação. Repetir a chave com o mesmo payload retorna o resultado anterior; reutilizá-la com outro payload retorna HTTP 409.",
+                "disabled": false
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "description": "Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/transactions/imports",
+            "description": "Importa um lote de transações com idempotência.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n| `Idempotency-Key` | Sim | String não vazia, máximo de 200 caracteres | Identificador único do lote de importação. Repetir a chave com o mesmo payload retorna o resultado anterior; reutilizá-la com outro payload retorna HTTP 409. |\n| `Content-Type` | Sim | `application/json` | Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload. |\n\n### Body\n\n| Campo | Tipo | Obrigatório | Significado e regras |\n| --- | --- | --- | --- |\n| `accountId` | UUID | Sim | Identificador da conta à qual as transações pertencem. |\n| `transactions` | Array | Sim | Lote contendo de 1 a 1.000 transações. |\n| `transactions[].externalId` | String | Sim | Identificador da transação no provedor. Máximo de 180 caracteres; é único dentro da conta. |\n| `transactions[].type` | Enum | Sim | Natureza do lançamento: `CREDIT` para entrada ou `DEBIT` para saída. |\n| `transactions[].amount` | Objeto monetário | Sim | Valor da transação; deve ser maior que zero e usar a mesma moeda da conta. |\n| `transactions[].amount.amount` | Decimal | Sim | Valor monetário não negativo, com até 17 dígitos inteiros e 2 casas decimais. Algumas operações exigem valor maior que zero. |\n| `transactions[].amount.currency` | String | Não (padrão `BRL`) | Código ISO 4217 de três letras, como `BRL`, `USD` ou `EUR`. |\n| `transactions[].description` | String | Sim | Descrição do lançamento. Não pode ser vazia; máximo de 300 caracteres. |\n| `transactions[].merchant` | String | Não | Nome do estabelecimento ou contraparte. Máximo de 180 caracteres. |\n| `transactions[].category` | Enum | Não | Categoria financeira. Quando omitida, a API tenta categorizar automaticamente. Valores: `INCOME`, `HOUSING`, `FOOD`, `TRANSPORT`, `HEALTH`, `EDUCATION`, `SUBSCRIPTIONS`, `DEBT_PAYMENT`, `CREDIT_CARD`, `INVESTMENTS`, `LEISURE`, `TAXES`, `TRANSFER`, `OTHER`. |\n| `transactions[].occurredAt` | Data/hora ISO 8601 | Sim | Data e hora em que a transação ocorreu, incluindo fuso. |",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"11111111-1111-4111-8111-111111111111\",\n  \"transactions\": [\n    {\n      \"externalId\": \"tx-001\",\n      \"type\": \"DEBIT\",\n      \"amount\": {\n        \"amount\": 125.45,\n        \"currency\": \"BRL\"\n      },\n      \"description\": \"Supermercado\",\n      \"merchant\": \"Mercado do Zé\",\n      \"category\": \"FOOD\",\n      \"occurredAt\": \"2026-08-20T12:30:00Z\"\n    },\n    {\n      \"externalId\": \"tx-002\",\n      \"type\": \"CREDIT\",\n      \"amount\": {\n        \"amount\": 3400.00,\n        \"currency\": \"BRL\"\n      },\n      \"description\": \"Salário\",\n      \"merchant\": null,\n      \"category\": \"INCOME\",\n      \"occurredAt\": \"2026-08-05T00:00:00Z\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/transactions",
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-08-01T00:00:00Z",
+                  "description": "Data/hora inicial.",
+                  "disabled": false
+                },
+                {
+                  "key": "to",
+                  "value": "2026-08-31T23:59:59Z",
+                  "description": "Data/hora final.",
+                  "disabled": false
+                },
+                {
+                  "key": "category",
+                  "value": "FOOD",
+                  "description": "Filtro opcional por categoria.",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Lista transações em um intervalo informado.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Obrigações",
+      "description": "Obrigações fixas.",
+      "item": [
+        {
+          "name": "POST /api/v1/obligations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "description": "Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/obligations",
+            "description": "Cria uma obrigação pendente.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n| `Content-Type` | Sim | `application/json` | Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload. |\n\n### Body\n\n| Campo | Tipo | Obrigatório | Significado e regras |\n| --- | --- | --- | --- |\n| `name` | String | Sim | Nome da obrigação ou conta a pagar. Não pode ser vazio; máximo de 160 caracteres. |\n| `type` | Enum | Sim | Tipo: `CREDIT_CARD`, `VEHICLE`, `HOUSING`, `UTILITIES`, `TAX`, `SUBSCRIPTION` ou `OTHER`. |\n| `amount` | Objeto monetário | Sim | Valor da obrigação; deve ser maior que zero. |\n| `amount.amount` | Decimal | Sim | Valor monetário não negativo, com até 17 dígitos inteiros e 2 casas decimais. Algumas operações exigem valor maior que zero. |\n| `amount.currency` | String | Não (padrão `BRL`) | Código ISO 4217 de três letras, como `BRL`, `USD` ou `EUR`. |\n| `dueDate` | Data ISO 8601 | Sim | Data de vencimento no formato `YYYY-MM-DD`. |",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Aluguel\",\n  \"type\": \"HOUSING\",\n  \"amount\": {\n    \"amount\": 2300.00,\n    \"currency\": \"BRL\"\n  },\n  \"dueDate\": \"2026-09-05\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/obligations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/obligations",
+            "description": "Lista obrigações ordenadas por vencimento.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /api/v1/obligations/{id}/paid",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/obligations/11111111-1111-4111-8111-111111111111/paid",
+            "description": "Marca uma obrigação como quitada.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dívidas",
+      "description": "Dívidas de longo e alto custo.",
+      "item": [
+        {
+          "name": "POST /api/v1/debts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "description": "Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/debts",
+            "description": "Cria uma dívida.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n| `Content-Type` | Sim | `application/json` | Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload. |\n\n### Body\n\n| Campo | Tipo | Obrigatório | Significado e regras |\n| --- | --- | --- | --- |\n| `name` | String | Sim | Nome usado para identificar a dívida. Não pode ser vazio; máximo de 160 caracteres. |\n| `type` | Enum | Sim | Tipo: `CREDIT_CARD`, `OVERDRAFT`, `PERSONAL_LOAN`, `VEHICLE_FINANCING`, `MORTGAGE` ou `OTHER`. |\n| `outstandingAmount` | Objeto monetário | Sim | Saldo devedor atual; deve ser maior que zero. |\n| `outstandingAmount.amount` | Decimal | Sim | Valor monetário não negativo, com até 17 dígitos inteiros e 2 casas decimais. Algumas operações exigem valor maior que zero. |\n| `outstandingAmount.currency` | String | Não (padrão `BRL`) | Código ISO 4217 de três letras, como `BRL`, `USD` ou `EUR`. |\n| `monthlyPayment` | Objeto monetário | Sim | Valor da parcela ou pagamento mensal. Deve usar a mesma moeda de `outstandingAmount`. |\n| `monthlyPayment.amount` | Decimal | Sim | Valor monetário não negativo, com até 17 dígitos inteiros e 2 casas decimais. Algumas operações exigem valor maior que zero. |\n| `monthlyPayment.currency` | String | Não (padrão `BRL`) | Código ISO 4217 de três letras, como `BRL`, `USD` ou `EUR`. |\n| `annualEffectiveRate` | Decimal | Sim | Taxa efetiva anual em formato fracionário, maior ou igual a zero; por exemplo, `0.38` representa 38% ao ano. |\n| `priority` | Enum | Sim | Prioridade de quitação: `HIGH_COST` para dívida de alto custo ou `REGULAR` para dívida comum. |",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cartão de crédito\",\n  \"type\": \"CREDIT_CARD\",\n  \"outstandingAmount\": {\n    \"amount\": 3200.00,\n    \"currency\": \"BRL\"\n  },\n  \"monthlyPayment\": {\n    \"amount\": 420.00,\n    \"currency\": \"BRL\"\n  },\n  \"annualEffectiveRate\": 0.38,\n  \"priority\": \"HIGH_COST\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/debts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/debts",
+            "description": "Lista dívidas cadastradas.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /api/v1/debts/{id}/paid",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/debts/11111111-1111-4111-8111-111111111111/paid",
+            "description": "Marca uma dívida como quitada.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Metas",
+      "description": "Metas financeiras.",
+      "item": [
+        {
+          "name": "POST /api/v1/goals",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "description": "Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/goals",
+            "description": "Cria uma meta financeira.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n| `Content-Type` | Sim | `application/json` | Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload. |\n\n### Body\n\n| Campo | Tipo | Obrigatório | Significado e regras |\n| --- | --- | --- | --- |\n| `name` | String | Sim | Nome da meta financeira. Não pode ser vazio; máximo de 160 caracteres. |\n| `targetAmount` | Objeto monetário | Sim | Valor total desejado para concluir a meta; deve ser maior que zero. |\n| `targetAmount.amount` | Decimal | Sim | Valor monetário não negativo, com até 17 dígitos inteiros e 2 casas decimais. Algumas operações exigem valor maior que zero. |\n| `targetAmount.currency` | String | Não (padrão `BRL`) | Código ISO 4217 de três letras, como `BRL`, `USD` ou `EUR`. |\n| `currentAmount` | Objeto monetário | Não (padrão `0 BRL`) | Valor já acumulado. Não pode superar `targetAmount` e deve usar a mesma moeda. |\n| `currentAmount.amount` | Decimal | Não (padrão `0 BRL`) | Valor monetário não negativo, com até 17 dígitos inteiros e 2 casas decimais. Algumas operações exigem valor maior que zero. |\n| `currentAmount.currency` | String | Não (padrão `BRL`) | Código ISO 4217 de três letras, como `BRL`, `USD` ou `EUR`. |\n| `targetDate` | Data ISO 8601 | Não | Data desejada para atingir a meta, no formato `YYYY-MM-DD`. |\n| `priority` | Inteiro | Não (padrão `3`) | Prioridade da meta, de 1 a 5; valores menores aparecem primeiro na ordenação. |",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Férias\",\n  \"targetAmount\": {\n    \"amount\": 8000.00,\n    \"currency\": \"BRL\"\n  },\n  \"currentAmount\": {\n    \"amount\": 2500.00,\n    \"currency\": \"BRL\"\n  },\n  \"targetDate\": \"2027-01-15\",\n  \"priority\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/goals",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/goals",
+            "description": "Lista metas ordenadas por prioridade.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /api/v1/goals/{id}/progress",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "description": "Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/goals/11111111-1111-4111-8111-111111111111/progress",
+            "description": "Atualiza o progresso de uma meta.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n| `Content-Type` | Sim | `application/json` | Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload. |\n\n### Body\n\n| Campo | Tipo | Obrigatório | Significado e regras |\n| --- | --- | --- | --- |\n| `currentAmount` | Objeto monetário | Sim | Novo valor acumulado. Deve usar a moeda da meta e não pode superar o valor-alvo. |\n| `currentAmount.amount` | Decimal | Sim | Valor monetário não negativo, com até 17 dígitos inteiros e 2 casas decimais. Algumas operações exigem valor maior que zero. |\n| `currentAmount.currency` | String | Não (padrão `BRL`) | Código ISO 4217 de três letras, como `BRL`, `USD` ou `EUR`. |",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentAmount\": {\n    \"amount\": 5000.00,\n    \"currency\": \"BRL\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Carteira",
+      "description": "Carteira e alocações alvo.",
+      "item": [
+        {
+          "name": "PUT /api/v1/portfolio",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "description": "Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/portfolio",
+            "description": "Substitui posições e alocações da carteira.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n| `Content-Type` | Sim | `application/json` | Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload. |\n\n### Body\n\n| Campo | Tipo | Obrigatório | Significado e regras |\n| --- | --- | --- | --- |\n| `positions` | Array | Sim | Posições atuais da carteira; aceita de 0 a 500 itens. Códigos de ativo não podem se repetir e todas as posições devem usar a mesma moeda. |\n| `positions[].assetCode` | String | Sim | Código único do ativo, como `ITUB4` ou `CASH`. Máximo de 48 caracteres. |\n| `positions[].assetName` | String | Sim | Nome descritivo do ativo. Máximo de 160 caracteres. |\n| `positions[].assetClass` | Enum | Sim | Classe: `CASH`, `FIXED_INCOME`, `BRAZILIAN_EQUITY`, `INTERNATIONAL_EQUITY`, `REAL_ESTATE_FUND`, `ETF`, `CRYPTO`, `PENSION` ou `ALTERNATIVE`. |\n| `positions[].currentValue` | Objeto monetário | Sim | Valor atual da posição. |\n| `positions[].currentValue.amount` | Decimal | Sim | Valor monetário não negativo, com até 17 dígitos inteiros e 2 casas decimais. Algumas operações exigem valor maior que zero. |\n| `positions[].currentValue.currency` | String | Não (padrão `BRL`) | Código ISO 4217 de três letras, como `BRL`, `USD` ou `EUR`. |\n| `targets` | Array | Sim | Faixas de alocação desejadas; deve conter de 1 a 20 itens, sem repetir classes. |\n| `targets[].assetClass` | Enum | Sim | Classe de ativo à qual a faixa de alocação se aplica. Usa os mesmos valores de `positions[].assetClass`. |\n| `targets[].targetPercentage` | Decimal | Sim | Percentual-alvo da classe, entre 0 e 100. A soma dos percentuais-alvo deve ser 100. |\n| `targets[].minimumPercentage` | Decimal | Sim | Limite mínimo aceitável, entre 0 e 100; deve ser menor ou igual ao percentual-alvo. |\n| `targets[].maximumPercentage` | Decimal | Sim | Limite máximo aceitável, entre 0 e 100; deve ser maior ou igual ao percentual-alvo. |",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"positions\": [\n    {\n      \"assetCode\": \"CASH\",\n      \"assetName\": \"Disponível\",\n      \"assetClass\": \"CASH\",\n      \"currentValue\": {\n        \"amount\": 1400.00,\n        \"currency\": \"BRL\"\n      }\n    },\n    {\n      \"assetCode\": \"ITUB4\",\n      \"assetName\": \"Itaú Unibanco\",\n      \"assetClass\": \"BRAZILIAN_EQUITY\",\n      \"currentValue\": {\n        \"amount\": 2500.00,\n        \"currency\": \"BRL\"\n      }\n    }\n  ],\n  \"targets\": [\n    {\n      \"assetClass\": \"CASH\",\n      \"targetPercentage\": 20.00,\n      \"minimumPercentage\": 10.00,\n      \"maximumPercentage\": 35.00\n    },\n    {\n      \"assetClass\": \"BRAZILIAN_EQUITY\",\n      \"targetPercentage\": 35.00,\n      \"minimumPercentage\": 20.00,\n      \"maximumPercentage\": 50.00\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/portfolio",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/portfolio",
+            "description": "Lê os ativos e alocações de carteira.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Open Finance",
+      "description": "Consentimentos e status do módulo Open Finance.",
+      "item": [
+        {
+          "name": "GET /api/v1/open-finance/status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/open-finance/status",
+            "description": "Consulta o status da integração Open Finance.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /api/v1/open-finance/consents",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "description": "Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/open-finance/consents",
+            "description": "Registra um consentimento de Open Finance.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n| `Content-Type` | Sim | `application/json` | Informa que o corpo da requisição está codificado como JSON. Deve ser enviado exatamente como `application/json` nas operações que possuem payload. |\n\n### Body\n\n| Campo | Tipo | Obrigatório | Significado e regras |\n| --- | --- | --- | --- |\n| `provider` | String | Sim | Identificador do provedor de Open Finance. Não pode ser vazio; máximo de 80 caracteres. |\n| `externalConsentId` | String | Sim | Identificador do consentimento no provedor. Máximo de 180 caracteres. |\n| `institution` | String | Sim | Instituição financeira relacionada ao consentimento. Máximo de 120 caracteres. |\n| `scopes` | Array de enums | Sim | Permissões concedidas; informe de 1 a 20 valores entre `ACCOUNTS`, `BALANCES`, `TRANSACTIONS`, `CREDIT_CARDS`, `CREDIT_OPERATIONS` e `INVESTMENTS`. |\n| `status` | Enum | Sim | Estado do consentimento: `AWAITING_AUTHORIZATION`, `ACTIVE`, `EXPIRED`, `REVOKED`, `REJECTED` ou `FAILED`. |\n| `expiresAt` | Data/hora ISO 8601 | Não | Expiração do consentimento. É obrigatória e deve estar no futuro quando `status` for `ACTIVE`. |",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"bcb\",\n  \"externalConsentId\": \"consent-001\",\n  \"institution\": \"Banco do Brasil\",\n  \"scopes\": [\"ACCOUNTS\", \"TRANSACTIONS\"],\n  \"status\": \"ACTIVE\",\n  \"expiresAt\": \"2027-08-28T12:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/open-finance/consents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/open-finance/consents",
+            "description": "Lista consentimentos registrados.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Planos",
+      "description": "Geração e revisão do plano financeiro.",
+      "item": [
+        {
+          "name": "POST /api/v1/plans",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/plans",
+              "query": [
+                {
+                  "key": "asOf",
+                  "value": "2026-08-28",
+                  "description": "Data base do cálculo do plano.",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Gera o plano financeiro para uma data base.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/plans/latest",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/plans/latest",
+            "description": "Consulta o último plano financeiro gerado.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /api/v1/plans/actions/{id}/approve",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/plans/actions/11111111-1111-4111-8111-111111111111/approve",
+            "description": "Aprova uma ação sugerida pelo plano.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /api/v1/plans/actions/{id}/reject",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": "{{base_url}}/api/v1/plans/actions/11111111-1111-4111-8111-111111111111/reject",
+            "description": "Rejeita uma ação sugerida pelo plano.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Relatórios",
+      "description": "Relatórios mensais.",
+      "item": [
+        {
+          "name": "GET /api/v1/reports/monthly",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "description": "Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401.",
+                "disabled": false
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/reports/monthly",
+              "query": [
+                {
+                  "key": "year",
+                  "value": "2026",
+                  "description": "Ano do relatório.",
+                  "disabled": false
+                },
+                {
+                  "key": "month",
+                  "value": "8",
+                  "description": "Mês do relatório.",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Gera o relatório mensal de fluxo de caixa.\n\n### Headers\n\n| Campo | Obrigatório | Formato/valor | Descrição |\n| --- | --- | --- | --- |\n| `X-API-Key` | Sim | String (`{{api_key}}`) | Chave de autenticação das rotas de negócio. O valor deve ser igual ao configurado em `FINFLOW_API_KEY`; quando ausente ou inválido, a API responde com HTTP 401. |\n\n### Body\n\nEste endpoint não recebe body."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "troque-por-um-segredo-forte",
+      "type": "string"
+    }
+  ]
+}
