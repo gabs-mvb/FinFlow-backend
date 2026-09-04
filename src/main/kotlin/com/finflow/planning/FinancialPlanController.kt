@@ -26,7 +26,13 @@ class FinancialPlanController(
     ): FinancialPlanResponse = service.generate(asOf ?: LocalDate.now(clock))
 
     @GetMapping("/latest")
-    fun latest(): FinancialPlanResponse = service.latest()
+    fun latest(): org.springframework.http.ResponseEntity<FinancialPlanResponse> {
+        return try {
+            org.springframework.http.ResponseEntity.ok(service.latest())
+        } catch (e: com.finflow.shared.api.ResourceNotFoundException) {
+            org.springframework.http.ResponseEntity.noContent().build()
+        }
+    }
 
     @PatchMapping("/actions/{id}/approve")
     fun approve(@PathVariable id: UUID): ActionIntentResponse = service.reviewAction(id, true)
