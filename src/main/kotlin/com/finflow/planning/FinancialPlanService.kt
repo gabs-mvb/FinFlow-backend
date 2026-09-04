@@ -187,9 +187,11 @@ class FinancialPlanService(
     }
 
     @Transactional
-    fun latest(): FinancialPlanResponse {
+    fun latest(): org.springframework.http.ResponseEntity<FinancialPlanResponse> {
         val plan = planRepository.findFirstByOrderByGeneratedAtDesc()
-            ?: throw ResourceNotFoundException("Nenhum plano financeiro foi gerado")
+        if (plan == null) {
+            return org.springframework.http.ResponseEntity.noContent().build()
+        }
         val profile = profileService.getRequired()
         val currency = Currency.getInstance(plan.currency)
         val accounts = accountRepository.findAllByCurrency(plan.currency)
@@ -197,13 +199,14 @@ class FinancialPlanService(
         val reserve = accounts.filter { it.purpose == AccountPurpose.EMERGENCY_RESERVE }
             .sumOf { it.availableBalance }
         val target = profile.essentialMonthlyExpenses.multiply(profile.emergencyTargetMonths.toBigDecimal())
-        return plan.toResponse(
+        val response = plan.toResponse(
             totalBalance = total,
             reserveBalance = reserve,
             emergencyTarget = target,
             allocations = decodeAllocations(plan.allocationPlan, currency),
             actions = actionRepository.findAllByPlanId(plan.id),
         )
+        return org.springframework.http.ResponseEntity.ok(response)
     }
 
     @Transactional
