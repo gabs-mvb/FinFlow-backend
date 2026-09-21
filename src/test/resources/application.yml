@@ -6,13 +6,16 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
   flyway:
-    enabled: true
+    enabled: false
+
+jwt:
+  secret: test-secret-key-for-jwt-that-should-be-at-least-32-characters-long
+  expiration: 86400000
 
 finflow:
   security:
     api-key: test-api-key
   open-finance:
     provider: disabled
-
