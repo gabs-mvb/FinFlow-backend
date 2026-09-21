@@ -22,7 +22,7 @@ src/main/kotlin/com/finflow/authentication/
 ├── controller/
 │   └── AuthenticationController.kt (API endpoints)
 └── security/
-    ├── SecurityConfig.kt (Configuração Spring Security)
+    ├── JwtSecurityConfigurer.kt (Beans de segurança)
     └── jwt/
         ├── JwtTokenProvider.kt (Geração e validação de tokens)
         ├── JwtAuthenticationFilter.kt (Filtro para extrair JWT)
@@ -31,32 +31,51 @@ src/main/kotlin/com/finflow/authentication/
 
 ### Endpoints Disponíveis
 
-- **POST /api/auth/register** - Registrar novo usuário
-  ```json
-  {
-    "name": "João Silva",
-    "email": "joao@example.com",
-    "password": "senha123"
-  }
-  ```
+#### Registro de Usuário
+```bash
+POST /api/auth/register
+Content-Type: application/json
 
-- **POST /api/auth/login** - Realizar login
-  ```json
-  {
-    "email": "joao@example.com",
-    "password": "senha123"
-  }
-  ```
-  
-  Resposta:
-  ```json
-  {
-    "id": 1,
-    "name": "João Silva",
-    "email": "joao@example.com",
-    "token": "eyJhbGciOiJIUzUxMiJ9..."
-  }
-  ```
+{
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "password": "senha123"
+}
+
+# Resposta (201 Created)
+{
+  "id": 1,
+  "name": "João Silva",
+  "email": "joao@example.com"
+}
+```
+
+#### Login
+```bash
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "joao@example.com",
+  "password": "senha123"
+}
+
+# Resposta (200 OK)
+{
+  "id": 1,
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "token": "eyJhbGciOiJIUzUxMiJ9..."
+}
+```
+
+### Usando o Token JWT
+
+Incluir o token em requisições futuras:
+```bash
+GET /api/seu-endpoint
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9...
+```
 
 ### Configuração
 
@@ -64,16 +83,33 @@ src/main/kotlin/com/finflow/authentication/
 
 ```yaml
 jwt:
-  secret: ${JWT_SECRET:dHJhY2tzYWZlZG9lc2VhcmxpZXJzaGVlcGZvb3RiYWxsb2JqZWN0cGxhaW5zaGVsdGVtZW4xZ3k5bW9weWM1ZzZnb3l6dmxwcXZ4YXpyZnF3aXVkeWF3eXN4dDZydGxpbmVxYnR5Ykl0ZWxxcnN3MA==}
+  secret: ${JWT_SECRET:seu-secret-key-aqui}
   expiration: ${JWT_EXPIRATION:86400000}  # 24 horas em ms
 ```
 
-### Uso do Token
+#### Para Desenvolvimento
 
-Incluir o token em requisições autenticadas:
+```bash
+# Gerar uma secret segura (execute no terminal)
+echo -n "sua-chave-segura" | sha256sum
 ```
-Authorization: Bearer <seu_token_aqui>
-```
+
+### Segurança
+
+- ✅ Senhas criptografadas com **BCrypt**
+- ✅ Tokens JWT com expiração configurável (24h por padrão)
+- ✅ Sessões **stateless**
+- ✅ CORS configurado
+- ✅ Endpoints públicos: `/api/auth/**`
+- ✅ Endpoints privados: requerem token JWT válido
+
+### Fluxo de Autenticação
+
+1. **Registro**: Usuário se registra → senha é criptografada com BCrypt
+2. **Login**: Credenciais são validadas → token JWT é gerado
+3. **Requisições Autenticadas**: Cliente inclui token no header `Authorization: Bearer <token>`
+4. **Validação**: Filtro JWT valida token em cada requisição
+5. **Acesso**: Se token válido → acesso concedido
 
 ### Dependências Adicionadas
 
@@ -83,32 +119,60 @@ runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
 runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 ```
 
-### Fluxo de Autenticação
+### Banco de Dados
 
-1. Usuário se registra → senha é criptografada com BCrypt
-2. Usuário faz login → credenciais são validadas
-3. Token JWT é gerado com expiração de 24 horas
-4. Cliente inclui token em requisições futuras
-5. Filtro JWT valida token em cada requisição
-6. Acesso concedido se token válido
-
-### Segurança
-
-- Senhas criptografadas com BCrypt
-- Sessões stateless (JWT)
-- CORS configurado
-- CSRF desabilitado (stateless)
-- Endpoints públicos: `/api/auth/**`
-- Endpoints privados: requerem token válido
-
-### Migration do Banco
-
-Arquivo: `src/main/resources/db/migration/V1__Create_users_table.sql`
+Arquivo: `src/main/resources/db/migration/V2__Create_users_table.sql`
 
 Cria tabela `users` com:
-- id (chave primária)
-- name
-- email (único)
-- password
-- created_at
-- active (status do usuário)
+- `id` - Chave primária
+- `name` - Nome do usuário
+- `email` - Email único
+- `password` - Senha criptografada
+- `created_at` - Data de criação
+- `active` - Status do usuário (ativo/inativo)
+
+### Integração com Segurança por API Key
+
+O sistema de autenticação JWT **coexiste** com a segurança por API Key existente:
+
+- **API Key** (`X-API-Key`): Usada para requisições de serviços/integrações
+- **JWT** (`Authorization: Bearer`): Usada para autenticação de usuários
+
+Ambas são suportadas independentemente.
+
+### Tratamento de Erros
+
+#### Token Expirado (401 Unauthorized)
+```json
+{
+  "status": 401,
+  "message": "Unauthorized: Token inválido ou expirado",
+  "path": "/api/seu-endpoint"
+}
+```
+
+#### Credenciais Inválidas (401 Unauthorized)
+```json
+{
+  "status": 401,
+  "message": "Usuário ou senha inválidos"
+}
+```
+
+#### Usuário já existe (400 Bad Request)
+```json
+{
+  "status": 400,
+  "message": "User already registered with this email"
+}
+```
+
+### Testes
+
+O projeto inclui testes automatizados. Para executar:
+```bash
+./gradlew test
+```
+
+Configuração de testes usa H2 em memória com JWT habilitado para validação do módulo de autenticação.
+
