@@ -86,6 +86,10 @@ class FinancialPlanService(
         TransactionCategory.OTHER,
     )
 
+    /**
+     * Consolida a posição financeira na data informada, persiste o plano e cria
+     * as intenções que poderão ser revisadas pelo usuário.
+     */
     @Transactional
     fun generate(asOf: LocalDate): FinancialPlanResponse {
         val profile = profileService.getRequired()
@@ -149,7 +153,8 @@ class FinancialPlanService(
         }
         val ignoredAccounts = accountRepository.findAll().count { it.currency != profile.currency }
         if (ignoredAccounts > 0) {
-            warnings += "$ignoredAccounts conta(s) em outra moeda foram excluídas do cálculo"
+            val accountLabel = if (ignoredAccounts == 1) "conta foi excluída" else "contas foram excluídas"
+            warnings += "$ignoredAccounts $accountLabel do cálculo porque usa outra moeda"
         }
         if (calculated.investmentContribution > BigDecimal.ZERO && allocations.isEmpty()) {
             warnings += "Aporte calculado sem alocação: configure as metas da carteira"
@@ -186,12 +191,11 @@ class FinancialPlanService(
         )
     }
 
+    /** Retorna o plano mais recente ou `null` quando ainda não houve cálculo. */
     @Transactional
-    fun latest(): org.springframework.http.ResponseEntity<FinancialPlanResponse> {
+    fun latest(): FinancialPlanResponse? {
         val plan = planRepository.findFirstByOrderByGeneratedAtDesc()
-        if (plan == null) {
-            return org.springframework.http.ResponseEntity.noContent().build()
-        }
+            ?: return null
         val profile = profileService.getRequired()
         val currency = Currency.getInstance(plan.currency)
         val accounts = accountRepository.findAllByCurrency(plan.currency)
@@ -199,16 +203,16 @@ class FinancialPlanService(
         val reserve = accounts.filter { it.purpose == AccountPurpose.EMERGENCY_RESERVE }
             .sumOf { it.availableBalance }
         val target = profile.essentialMonthlyExpenses.multiply(profile.emergencyTargetMonths.toBigDecimal())
-        val response = plan.toResponse(
+        return plan.toResponse(
             totalBalance = total,
             reserveBalance = reserve,
             emergencyTarget = target,
             allocations = decodeAllocations(plan.allocationPlan, currency),
             actions = actionRepository.findAllByPlanId(plan.id),
         )
-        return org.springframework.http.ResponseEntity.ok(response)
     }
 
+    /** Registra a decisão do usuário sem executar movimentações financeiras. */
     @Transactional
     fun reviewAction(id: UUID, approve: Boolean): ActionIntentResponse {
         val action = actionRepository.findById(id)
@@ -237,31 +241,31 @@ class FinancialPlanService(
         if (committed > BigDecimal.ZERO) add(action(
             plan, ActionType.RESERVE_FOR_OBLIGATIONS, committed, currency, RiskLevel.LOW,
             requiresApproval = false,
-            rationale = "Separação contábil das obrigações até a próxima renda",
+            rationale = "Valor reservado para obrigações que vencem antes da próxima renda",
             now = now,
         ))
         if (result.projectedShortfall > BigDecimal.ZERO) add(action(
             plan, ActionType.REDUCE_VARIABLE_SPENDING, result.projectedShortfall, currency, RiskLevel.LOW,
             requiresApproval = false,
-            rationale = "Reduzir ou adiar gastos para eliminar o déficit projetado",
+            rationale = "O orçamento precisa cair neste valor para evitar o déficit projetado",
             now = now,
         ))
         if (result.debtPaymentRecommendation > BigDecimal.ZERO) add(action(
             plan, ActionType.PAY_HIGH_COST_DEBT, result.debtPaymentRecommendation, currency, RiskLevel.MEDIUM,
             requiresApproval = true,
-            rationale = "Dívida de alto custo tem prioridade sobre aportes",
+            rationale = "Pagamento priorizado porque há dívida de alto custo em aberto",
             now = now,
         ))
         if (result.reserveContribution > BigDecimal.ZERO) add(action(
             plan, ActionType.TRANSFER_TO_EMERGENCY_RESERVE, result.reserveContribution, currency, RiskLevel.LOW,
             requiresApproval = true,
-            rationale = "Recomposição da reserva conforme meta configurada",
+            rationale = "Valor necessário neste mês para avançar até a meta da reserva",
             now = now,
         ))
         if (result.investmentContribution > BigDecimal.ZERO) add(action(
             plan, ActionType.CREATE_INVESTMENT_CONTRIBUTION, result.investmentContribution, currency,
             RiskLevel.MEDIUM, requiresApproval = true,
-            rationale = "Aporte limitado pela taxa mensal e pelas prioridades financeiras",
+            rationale = "Aporte disponível após cobrir obrigações, dívida cara e reserva",
             now = now,
         ))
     }
@@ -348,4 +352,3 @@ private fun ActionIntentEntity.toResponse(): ActionIntentResponse = ActionIntent
     status = status,
     rationale = rationale,
 )
-

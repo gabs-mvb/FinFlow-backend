@@ -1,19 +1,19 @@
 # FinFlow Backend
 
-API Kotlin para um CFO pessoal: consolida a vida financeira, calcula o saldo livre real, cria um limite diário e recomenda a próxima ação respeitando a ordem **obrigações → dívida cara → reserva de emergência → investimentos**.
+API Kotlin para planejamento financeiro pessoal. Ela reúne contas e compromissos, calcula o saldo que pode ser usado, define um limite diário e recomenda a próxima ação nesta ordem: obrigações, dívida cara, reserva de emergência e investimentos.
 
-O MVP é deliberadamente seguro: ele registra consentimentos e recebe dados financeiros por uma interface canônica, mas **não se conecta diretamente a bancos e não movimenta dinheiro**. Aprovar uma ação muda somente o estado da intenção; `executionAvailable` continua `false`.
+O MVP registra consentimentos e recebe dados financeiros em um formato único. Ainda não há conexão direta com bancos nem movimentação de dinheiro. Aprovar uma ação muda apenas o estado da intenção; `executionAvailable` permanece `false`.
 
 ## O que já funciona
 
 - perfil financeiro, orçamento, dia do salário, reserva-alvo, perfil de risco e modo `OBSERVER`, `COPILOT` ou `AUTOPILOT`;
 - contas consolidadas por finalidade: operação, reserva, metas e investimentos;
-- importação idempotente de transações e categorização determinística inicial;
+- importação idempotente de transações, com categorização inicial baseada em regras;
 - obrigações, cartões/faturas, dívidas e metas;
 - carteira e faixas-alvo de alocação, direcionando novos aportes sem vender posições;
 - plano financeiro com déficit projetado, saldo livre real, limite diário e intenções auditáveis;
 - relatório mensal com fluxo de caixa, taxa de poupança e prioridades;
-- registro de consentimentos Open Finance e indicação transparente do status da integração;
+- registro de consentimentos Open Finance e consulta do estado da integração;
 - autenticação por API key, validação, erros RFC 9457 (`application/problem+json`), auditoria e migrations Flyway.
 
 ## Stack
@@ -33,7 +33,7 @@ $env:FINFLOW_API_KEY = "troque-por-um-segredo-forte"
 .\gradlew.bat bootRun
 ```
 
-A API ficará em `http://localhost:8080`. Envie `X-API-Key` em todas as rotas de negócio. Apenas `/actuator/health` e `/actuator/info` são públicas.
+A API ficará disponível em `http://localhost:8080`. Envie `X-API-Key` em todas as rotas de negócio. Apenas `/actuator/health` e `/actuator/info` são públicas.
 
 Para testar e gerar o artefato:
 
@@ -89,11 +89,11 @@ Invoke-RestMethod -Method Put -Uri http://localhost:8080/api/v1/profile `
 | Plano | `POST /api/v1/plans`, `GET /api/v1/plans/latest`, revisão de ações em `/api/v1/plans/actions/{id}` |
 | Relatório | `GET /api/v1/reports/monthly?year={ano}&month={mês}` |
 
-Detalhes das regras e das fronteiras de segurança estão em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+As regras de cálculo e os limites de segurança estão em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Limites do MVP
 
 - `OPEN_FINANCE_PROVIDER=disabled` é o padrão. Uma instituição participante ou agregador autorizado ainda precisa implementar a troca de consentimento e a sincronização real.
-- O modo `AUTOPILOT` não amplia permissões: qualquer execução bancária futura deverá passar por políticas determinísticas, limites, consentimento válido, idempotência e auditoria.
+- O modo `AUTOPILOT` não concede permissões adicionais. Uma futura execução bancária ainda terá de validar política, limites, consentimento, idempotência e auditoria.
 - A API é de usuário único nesta fase. Antes de exposição pública, substitua a API key por autenticação forte, isolamento por usuário e gestão de segredos.
 - As recomendações são regras de planejamento, não garantia de rentabilidade nem oferta de produto financeiro.

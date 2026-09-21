@@ -31,6 +31,10 @@ management:
       probes:
         enabled: true
 
+jwt:
+  secret: ${JWT_SECRET:dHJhY2tzYWZlZG9lc2VhcmxpZXJzaGVlcGZvb3RiYWxsb2JqZWN0cGxhaW5zaGVsdGVtZW4xZ3k5bW9weWM1ZzZnb3l6dmxwcXZ4YXpyZnF3aXVkeWF3eXN4dDZydGxpbmVxYnR5Ykl0ZWxxcnN3MA==}
+  expiration: ${JWT_EXPIRATION:86400000}
+
 finflow:
   security:
     api-key: dHJhY2tzYWZlZG9lc2VhcmxpZXJzaGVlcGZvb3RiYWxsb2JqZWN0cGxhaW5zaGVsdGU=

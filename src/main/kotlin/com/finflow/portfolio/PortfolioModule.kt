@@ -177,6 +177,10 @@ class PortfolioService(
         targets = targetRepository.findAll().map { it.toResponse() },
     )
 
+    /**
+     * Divide um novo aporte pelos maiores desvios das metas, sem vender
+     * posições existentes nem ultrapassar o valor recebido.
+     */
     @Transactional
     fun allocateContribution(contribution: Money): List<ContributionAllocation> {
         if (!contribution.isPositive()) return emptyList()

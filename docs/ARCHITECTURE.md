@@ -10,7 +10,7 @@ dados canônicos -> consolidação -> motor determinístico -> intenção -> apr
                                                               +-> sem executor bancário no MVP
 ```
 
-Uma futura camada de IA pode explicar cenários e sugerir intenções, mas não deve chamar APIs bancárias. Somente um orquestrador técnico determinístico poderá validar consentimento, política, limite, risco, idempotência e auditoria antes de delegar a um conector regulado.
+Uma futura camada de IA poderá explicar cenários e sugerir intenções, sem acesso direto às APIs bancárias. A chamada a um conector regulado ficará a cargo de um orquestrador determinístico, depois de validar consentimento, política, limite, risco, idempotência e auditoria.
 
 ## Modular monolith
 
@@ -25,7 +25,7 @@ Cada pacote em `com.finflow` representa um módulo funcional:
 - `report`: fechamento mensal;
 - `audit`, `shared.security`, `shared.api` e `shared.domain`: capacidades transversais.
 
-O desenho mantém uma implantação única e fronteiras claras, permitindo extrair módulos apenas quando escala, equipe ou regulação justificarem.
+Todos os módulos são implantados juntos. Um módulo só deve virar serviço separado quando volume, organização da equipe ou exigência regulatória trouxerem uma necessidade concreta.
 
 ## Cálculo do plano
 
@@ -46,6 +46,10 @@ O plano nunca usa saldo de contas marcadas como `EMERGENCY_RESERVE`, `GOAL` ou `
 `POST /api/v1/transactions/imports` exige `Idempotency-Key`. Repetir a chave com o mesmo conteúdo devolve o resultado anterior; repetir com outro conteúdo retorna conflito. `accountId + externalId` também impede duplicação de uma transação.
 
 Mudanças relevantes registram eventos em `audit_events`. Payloads bancários, chaves e segredos não são gravados no log de auditoria.
+
+## Contrato de erros
+
+A API responde com `application/problem+json`. Erros de validação e leitura retornam mensagens próprias para o cliente, sem nomes de classes ou detalhes internos. Violações de unicidade são tratadas como conflito, inclusive quando duas requisições concorrentes passam pela verificação inicial. Falhas inesperadas são registradas no servidor e recebem uma resposta genérica.
 
 ## Evolução para Open Finance real
 

@@ -133,8 +133,11 @@ class OpenFinanceConsentService(
     @Transactional
     fun list(): List<ConsentResponse> = repository.findAll().map { it.toResponse() }
 
+    /** Consulta o relógio da aplicação para desconsiderar consentimentos vencidos. */
     @Transactional
-    fun hasActiveConsent(now: OffsetDateTime = OffsetDateTime.now(clock)): Boolean =
+    fun hasActiveConsent(): Boolean = hasActiveConsentAt(OffsetDateTime.now(clock))
+
+    internal fun hasActiveConsentAt(now: OffsetDateTime): Boolean =
         repository.findAllByStatus(ConsentStatus.ACTIVE)
             .any { consent -> consent.expiresAt?.isAfter(now) == true }
 

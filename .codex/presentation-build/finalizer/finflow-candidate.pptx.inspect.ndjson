@@ -1,0 +1,180 @@
+{"kind":"deck","id":"pr/3u1nua","name":"Deck"}
+{"kind":"layout","layoutId":"d4ef75bf-36b1-47ee-8d35-89da662fc6da","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"c608978b-12ad-4523-9199-8f90c0f9d7ce","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/i20zzs","slide":1,"title":"PLANEJAMENTO FINANCEIRO PESSOAL","textShapes":5}
+{"kind":"shape","id":"sh/83ehorqp","slide":1,"bbox":[0,0,24,720]}
+{"kind":"shape","id":"sh/n250v694","slide":1,"bbox":[930,70,270,270]}
+{"kind":"shape","id":"sh/mhwzm18j","slide":1,"bbox":[1010,180,190,190]}
+{"kind":"shape","id":"sh/h87i1gr6","slide":1,"bbox":[880,300,320,320]}
+{"kind":"textbox","id":"sh/w7y1sbql","slide":1,"text":"PLANEJAMENTO FINANCEIRO PESSOAL","textPreview":"PLANEJAMENTO FINANCEIRO PESSOAL","textChars":31,"textLines":1,"bbox":[78,105,520,28]}
+{"kind":"textbox","id":"sh/v650z690","slide":1,"text":"FinFlow","textPreview":"FinFlow","textChars":7,"textLines":1,"bbox":[72,180,700,105]}
+{"kind":"textbox","id":"sh/a5wzq18f","slide":1,"text":"Um backend que transforma dados financeiros em um plano diário claro e auditável","textPreview":"Um backend que transforma dados financeiros em um plano diário claro e auditável","textChars":80,"textLines":1,"bbox":[76,294,690,132]}
+{"kind":"textbox","id":"sh/dc3ipcr2","slide":1,"text":"Produto e arquitetura","textPreview":"Produto e arquitetura","textChars":21,"textLines":1,"bbox":[78,590,390,34]}
+{"kind":"textbox","id":"sh/cbuhg7ah","slide":1,"text":"Kotlin  •  Spring Boot  •  PostgreSQL","textPreview":"Kotlin  •  Spring Boot  •  PostgreSQL","textChars":37,"textLines":1,"bbox":[78,628,520,28]}
+{"kind":"notes","id":"nt/i20zzs","slide":1,"text":"Abra apresentando o FinFlow como um planejador financeiro pessoal. O produto consolida dados, calcula o que realmente está disponível e gera ações que o usuário pode revisar. A apresentação usa apenas capacidades presentes no repositório."}
+{"kind":"slide","id":"sl/djyp5y","slide":2,"title":"A decisão financeira acontece com dados espalhados","textShapes":11}
+{"kind":"textbox","id":"sh/9wfm5oje","slide":2,"text":"A decisão financeira acontece com dados espalhados","textPreview":"A decisão financeira acontece com dados espalhados","textChars":50,"textLines":1,"bbox":[70,42,1030,66]}
+{"kind":"textbox","id":"sh/m9ona9k3","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1150,48,60,38]}
+{"kind":"textbox","id":"sh/nux43e1o","slide":2,"text":"Saldo bancário","textPreview":"Saldo bancário","textChars":14,"textLines":1,"bbox":[78,160,260,48]}
+{"kind":"textbox","id":"sh/07m58z2x","slide":2,"text":"mostra o agora","textPreview":"mostra o agora","textChars":14,"textLines":1,"bbox":[78,210,260,34]}
+{"kind":"textbox","id":"sh/18vm14ji","slide":2,"text":"Faturas e dívidas","textPreview":"Faturas e dívidas","textChars":17,"textLines":1,"bbox":[78,305,300,48]}
+{"kind":"textbox","id":"sh/e54n69kr","slide":2,"text":"mostram compromissos","textPreview":"mostram compromissos","textChars":20,"textLines":1,"bbox":[78,355,300,34]}
+{"kind":"textbox","id":"sh/z6d4ze1c","slide":2,"text":"Metas e reserva","textPreview":"Metas e reserva","textChars":15,"textLines":1,"bbox":[78,450,300,48]}
+{"kind":"textbox","id":"sh/k3q5k321","slide":2,"text":"mostram o futuro","textPreview":"mostram o futuro","textChars":16,"textLines":1,"bbox":[78,500,300,34]}
+{"kind":"shape","id":"sh/l4z6d8jm","slide":2,"bbox":[420,140,0,440]}
+{"kind":"textbox","id":"sh/xknq5w7u","slide":2,"text":"PERGUNTA QUE FICA SEM RESPOSTA","textPreview":"PERGUNTA QUE FICA SEM RESPOSTA","textChars":30,"textLines":1,"bbox":[500,158,500,28]}
+{"kind":"textbox","id":"sh/wjepwr6p","slide":2,"text":"Quanto posso gastar hoje sem comprometer o restante do mês?","textPreview":"Quanto posso gastar hoje sem comprometer o restante do mês?","textChars":59,"textLines":1,"bbox":[495,215,660,170]}
+{"kind":"shape","id":"sh/vi5836p4","slide":2,"bbox":[500,440,600,4]}
+{"kind":"textbox","id":"sh/ahw7u1oj","slide":2,"text":"O FinFlow reúne essas informações antes de recomendar qualquer ação.","textPreview":"O FinFlow reúne essas informações antes de recomendar qualquer ação.","textChars":68,"textLines":1,"bbox":[500,475,610,90]}
+{"kind":"notes","id":"nt/djyp5y","slide":2,"text":"O problema central não é a falta de telas bancárias. É a falta de uma resposta consolidada para a decisão diária. Saldo isolado não considera obrigações, dívida cara, reserva e metas."}
+{"kind":"slide","id":"sl/x9jkmt","slide":3,"title":"Um CFO pessoal baseado em regras","textShapes":11}
+{"kind":"textbox","id":"sh/5ojyl0fq","slide":3,"text":"Um CFO pessoal baseado em regras","textPreview":"Um CFO pessoal baseado em regras","textChars":32,"textLines":1,"bbox":[70,42,1030,66]}
+{"kind":"textbox","id":"sh/il8fa5gz","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1150,48,60,38]}
+{"kind":"textbox","id":"sh/jmhgjqxk","slide":3,"text":"ENTRADA","textPreview":"ENTRADA","textChars":7,"textLines":1,"bbox":[78,138,220,28]}
+{"kind":"textbox","id":"sh/wjqx8vy9","slide":3,"text":"Contas, transações, obrigações, dívidas, metas e carteira","textPreview":"Contas, transações, obrigações, dívidas, metas e carteira","textChars":57,"textLines":1,"bbox":[78,178,430,130]}
+{"kind":"shape","id":"sh/hkzeh0fu","slide":3,"bbox":[565,178,0,350]}
+{"kind":"textbox","id":"sh/ux8f6lg3","slide":3,"text":"CÁLCULO","textPreview":"CÁLCULO","textChars":7,"textLines":1,"bbox":[635,138,220,28]}
+{"kind":"textbox","id":"sh/vyhwfqxo","slide":3,"text":"O motor protege o caixa do mês e distribui somente o excedente disponível.","textPreview":"O motor protege o caixa do mês e distribui somente o excedente disponível.","textChars":74,"textLines":1,"bbox":[635,178,500,130]}
+{"kind":"shape","id":"sh/8vqx4byx","slide":3,"bbox":[76,390,1058,170]}
+{"kind":"textbox","id":"sh/9wzedgfi","slide":3,"text":"Resultado","textPreview":"Resultado","textChars":9,"textLines":1,"bbox":[110,414,170,28]}
+{"kind":"textbox","id":"sh/1c3q5snq","slide":3,"text":"saldo livre real","textPreview":"saldo livre real","textChars":16,"textLines":1,"bbox":[110,460,260,52]}
+{"kind":"textbox","id":"sh/0bupwn65","slide":3,"text":"limite diário","textPreview":"limite diário","textChars":13,"textLines":1,"bbox":[450,460,220,52]}
+{"kind":"textbox","id":"sh/falo3i5k","slide":3,"text":"próxima ação","textPreview":"próxima ação","textChars":12,"textLines":1,"bbox":[770,460,240,52]}
+{"kind":"textbox","id":"sh/e9c7udoz","slide":3,"text":"Cada plano mantém avisos, intenções e registro de auditoria.","textPreview":"Cada plano mantém avisos, intenções e registro de auditoria.","textChars":60,"textLines":1,"bbox":[78,608,760,42]}
+{"kind":"notes","id":"nt/x9jkmt","slide":3,"text":"Explique que o FinFlow não tenta prever o mercado. Ele aplica regras financeiras explícitas e devolve um plano que pode ser entendido, revisado e auditado."}
+{"kind":"slide","id":"sl/vgg9mo","slide":4,"title":"A ordem de prioridade protege o caixa","textShapes":15}
+{"kind":"textbox","id":"sh/jetcrut8","slide":4,"text":"A ordem de prioridade protege o caixa","textPreview":"A ordem de prioridade protege o caixa","textChars":37,"textLines":1,"bbox":[70,42,1030,66]}
+{"kind":"textbox","id":"sh/4f2dkzat","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1150,48,60,38]}
+{"kind":"shape","id":"sh/5gvut4be","slide":4,"bbox":[150,150,980,82]}
+{"kind":"textbox","id":"sh/6h4vm9sz","slide":4,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[174,165,46,50]}
+{"kind":"textbox","id":"sh/ridcvetk","slide":4,"text":"Obrigações e caixa mínimo","textPreview":"Obrigações e caixa mínimo","textChars":25,"textLines":1,"bbox":[240,160,340,34]}
+{"kind":"textbox","id":"sh/sjmdozap","slide":4,"text":"Reserva o que vence antes da próxima renda","textPreview":"Reserva o que vence antes da próxima renda","textChars":42,"textLines":1,"bbox":[757.6,162,333.2,54]}
+{"kind":"shape","id":"sh/tkvux4ra","slide":4,"bbox":[220,252,840,82]}
+{"kind":"textbox","id":"sh/ml0ba5sf","slide":4,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[244,267,46,50]}
+{"kind":"textbox","id":"sh/nm9cjat0","slide":4,"text":"Dívida de alto custo","textPreview":"Dívida de alto custo","textChars":20,"textLines":1,"bbox":[310,262,340,34]}
+{"kind":"textbox","id":"sh/n698nq1k","slide":4,"text":"Usa o excedente para reduzir juros caros","textPreview":"Usa o excedente para reduzir juros caros","textChars":40,"textLines":1,"bbox":[740.8,264,285.6,54]}
+{"kind":"shape","id":"sh/m50rulkf","slide":4,"bbox":[290,354,700,82]}
+{"kind":"textbox","id":"sh/98rap0jq","slide":4,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[314,369,46,50]}
+{"kind":"textbox","id":"sh/o7i9wv25","slide":4,"text":"Reserva de emergência","textPreview":"Reserva de emergência","textChars":21,"textLines":1,"bbox":[380,364,336,34]}
+{"kind":"textbox","id":"sh/f298jq1o","slide":4,"text":"Avança até a meta configurada","textPreview":"Avança até a meta configurada","textChars":29,"textLines":1,"bbox":[724,366,238,54]}
+{"kind":"shape","id":"sh/e1grqlk3","slide":4,"bbox":[360,456,560,82]}
+{"kind":"textbox","id":"sh/14rqlgju","slide":4,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[384,471,46,50]}
+{"kind":"textbox","id":"sh/03i9sb29","slide":4,"text":"Investimentos","textPreview":"Investimentos","textChars":13,"textLines":1,"bbox":[450,466,268.8,34]}
+{"kind":"textbox","id":"sh/rep8f61s","slide":4,"text":"Aporte após as prioridades anteriores","textPreview":"Aporte após as prioridades anteriores","textChars":37,"textLines":1,"bbox":[707.2,468,190.4,54]}
+{"kind":"textbox","id":"sh/qdgrm1k7","slide":4,"text":"O limite diário nasce do saldo livre dividido pelos dias até a próxima renda.","textPreview":"O limite diário nasce do saldo livre dividido pelos dias até a próxima renda.","textChars":77,"textLines":1,"bbox":[215,598,850,54]}
+{"kind":"notes","id":"nt/vgg9mo","slide":4,"text":"Esta é a regra principal do produto. O investimento aparece no fim porque o sistema primeiro cobre o mês, reduz dívida cara e recompõe a reserva."}
+{"kind":"slide","id":"sl/3nnizz","slide":5,"title":"A jornada até o primeiro plano","textShapes":18}
+{"kind":"textbox","id":"sh/a90nul0n","slide":5,"text":"A jornada até o primeiro plano","textPreview":"A jornada até o primeiro plano","textChars":30,"textLines":1,"bbox":[70,42,1030,66]}
+{"kind":"textbox","id":"sh/xwrm50jy","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1150,48,60,38]}
+{"kind":"shape","id":"sh/wvi5wvit","slide":5,"bbox":[120,270,1020,0]}
+{"kind":"shape","id":"sh/n694zq1w","slide":5,"bbox":[65,225,110,110]}
+{"kind":"textbox","id":"sh/m5g3ql0b","slide":5,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[65,249,110,54]}
+{"kind":"textbox","id":"sh/98rm1gj2","slide":5,"text":"Perfil","textPreview":"Perfil","textChars":6,"textLines":1,"bbox":[30,365,180,42]}
+{"kind":"textbox","id":"sh/o7ilsvih","slide":5,"text":"renda, orçamento e risco","textPreview":"renda, orçamento e risco","textChars":24,"textLines":1,"bbox":[20,412,200,74]}
+{"kind":"shape","id":"sh/72t4ba1g","slide":5,"bbox":[310,225,110,110]}
+{"kind":"textbox","id":"sh/61kn250v","slide":5,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[310,249,110,54]}
+{"kind":"textbox","id":"sh/8fq1c3qt","slide":5,"text":"Contas","textPreview":"Contas","textChars":6,"textLines":1,"bbox":[275,365,180,42]}
+{"kind":"textbox","id":"sh/t0j258re","slide":5,"text":"saldos por finalidade","textPreview":"saldos por finalidade","textChars":21,"textLines":1,"bbox":[265,412,200,74]}
+{"kind":"shape","id":"sh/6d8jat83","slide":5,"bbox":[555,225,110,110]}
+{"kind":"textbox","id":"sh/7ehk3y9o","slide":5,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[555,249,110,54]}
+{"kind":"textbox","id":"sh/kbq18jqx","slide":5,"text":"Compromissos","textPreview":"Compromissos","textChars":12,"textLines":1,"bbox":[520,365,180,42]}
+{"kind":"textbox","id":"sh/lcz21ori","slide":5,"text":"obrigações e dívidas","textPreview":"obrigações e dívidas","textChars":20,"textLines":1,"bbox":[510,412,200,74]}
+{"kind":"shape","id":"sh/y98j698r","slide":5,"bbox":[800,225,110,110]}
+{"kind":"textbox","id":"sh/jah0ze9c","slide":5,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[800,249,110,54]}
+{"kind":"textbox","id":"sh/w7614ja1","slide":5,"text":"Transações","textPreview":"Transações","textChars":10,"textLines":1,"bbox":[765,365,180,42]}
+{"kind":"textbox","id":"sh/x8zixor6","slide":5,"text":"importação idempotente","textPreview":"importação idempotente","textChars":22,"textLines":1,"bbox":[755,412,200,74]}
+{"kind":"shape","id":"sh/ds7qlgfy","slide":5,"bbox":[1045,225,110,110]}
+{"kind":"textbox","id":"sh/srypcbyd","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1045,249,110,54]}
+{"kind":"textbox","id":"sh/rq58j6xs","slide":5,"text":"Plano","textPreview":"Plano","textChars":5,"textLines":1,"bbox":[1010,365,180,42]}
+{"kind":"textbox","id":"sh/qpw7a1g7","slide":5,"text":"cálculo e intenções","textPreview":"cálculo e intenções","textChars":19,"textLines":1,"bbox":[1000,412,200,74]}
+{"kind":"shape","id":"sh/5onqhwf2","slide":5,"bbox":[165,550,950,2]}
+{"kind":"textbox","id":"sh/4nep8ryh","slide":5,"text":"Depois do plano, o usuário aprova ou rejeita cada intenção. O backend não executa transferências.","textPreview":"Depois do plano, o usuário aprova ou rejeita cada intenção. O backend não executa transferências.","textChars":97,"textLines":1,"bbox":[165,575,950,62]}
+{"kind":"notes","id":"nt/3nnizz","slide":5,"text":"A jornada começa pela configuração do perfil e termina com um plano revisável. A importação exige Idempotency-Key, evitando que o mesmo lote seja processado duas vezes."}
+{"kind":"slide","id":"sl/ydn3qa","slide":6,"title":"O MVP cobre o ciclo financeiro essencial","textShapes":11}
+{"kind":"textbox","id":"sh/uxcnutgb","slide":6,"text":"O MVP cobre o ciclo financeiro essencial","textPreview":"O MVP cobre o ciclo financeiro essencial","textChars":40,"textLines":1,"bbox":[70,42,1030,66]}
+{"kind":"textbox","id":"sh/h0nm58f2","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1150,48,60,38]}
+{"kind":"textbox","id":"sh/gze5w3yh","slide":6,"text":"Consolidar","textPreview":"Consolidar","textChars":10,"textLines":1,"bbox":[80,145,230,62]}
+{"kind":"textbox","id":"sh/7al4zyx0","slide":6,"text":"Contas, saldos e transações em um modelo canônico","textPreview":"Contas, saldos e transações em um modelo canônico","textChars":49,"textLines":1,"bbox":[355,145,790,62]}
+{"kind":"shape","id":"sh/69c3qtgf","slide":6,"bbox":[80,235,1060,0]}
+{"kind":"textbox","id":"sh/tw3m1of6","slide":6,"text":"Planejar","textPreview":"Planejar","textChars":8,"textLines":1,"bbox":[80,263,230,62]}
+{"kind":"textbox","id":"sh/8vu5s3yl","slide":6,"text":"Obrigações, orçamento variável, dívida, reserva e aportes","textPreview":"Obrigações, orçamento variável, dívida, reserva e aportes","textChars":57,"textLines":1,"bbox":[355,263,790,62]}
+{"kind":"shape","id":"sh/rqp4bix4","slide":6,"bbox":[80,353,1060,0]}
+{"kind":"textbox","id":"sh/q5wn2dgj","slide":6,"text":"Acompanhar","textPreview":"Acompanhar","textChars":10,"textLines":1,"bbox":[80,381,230,62]}
+{"kind":"textbox","id":"sh/kv2lgvep","slide":6,"text":"Metas, carteira e relatório mensal","textPreview":"Metas, carteira e relatório mensal","textChars":34,"textLines":1,"bbox":[355,381,790,62]}
+{"kind":"shape","id":"sh/lwbm90va","slide":6,"bbox":[80,471,1060,0]}
+{"kind":"textbox","id":"sh/yt03elwj","slide":6,"text":"Controlar","textPreview":"Controlar","textChars":9,"textLines":1,"bbox":[80,499,230,62]}
+{"kind":"textbox","id":"sh/jut47qx4","slide":6,"text":"Consentimentos, API key, auditoria e erros padronizados","textPreview":"Consentimentos, API key, auditoria e erros padronizados","textChars":55,"textLines":1,"bbox":[355,499,790,62]}
+{"kind":"textbox","id":"sh/wrilcbed","slide":6,"text":"Modos disponíveis: OBSERVER, COPILOT e AUTOPILOT. No MVP, nenhum modo libera execução bancária.","textPreview":"Modos disponíveis: OBSERVER, COPILOT e AUTOPILOT. No MVP, nenhum modo libera execução bancária.","textChars":95,"textLines":1,"bbox":[80,628,1040,38]}
+{"kind":"notes","id":"nt/ydn3qa","slide":6,"text":"O MVP já cobre cadastro, consolidação, planejamento, acompanhamento e controles técnicos. Os três modos existem no perfil, mas a fronteira de execução continua fechada."}
+{"kind":"slide","id":"sl/2n5831","slide":7,"title":"Recomendação e execução permanecem separadas","textShapes":12}
+{"kind":"textbox","id":"sh/l0jylcbm","slide":7,"text":"Recomendação e execução permanecem separadas","textPreview":"Recomendação e execução permanecem separadas","textChars":44,"textLines":1,"bbox":[70,42,1030,66]}
+{"kind":"textbox","id":"sh/yd8faxcv","slide":7,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1150,48,60,38]}
+{"kind":"shape","id":"sh/ze1gj2tg","slide":7,"bbox":[170,308,780,0]}
+{"kind":"shape","id":"sh/cbqx8nup","slide":7,"bbox":[80,235,210,150]}
+{"kind":"textbox","id":"sh/xczyhsba","slide":7,"text":"Dados canônicos","textPreview":"Dados canônicos","textChars":15,"textLines":1,"bbox":[98,260,174,42]}
+{"kind":"textbox","id":"sh/a98f6xcz","slide":7,"text":"contas e transações","textPreview":"contas e transações","textChars":19,"textLines":1,"bbox":[98,312,174,44]}
+{"kind":"shape","id":"sh/bahgfitk","slide":7,"bbox":[340,235,210,150]}
+{"kind":"textbox","id":"sh/w7uhkru9","slide":7,"text":"Motor","textPreview":"Motor","textChars":5,"textLines":1,"bbox":[358,260,174,42]}
+{"kind":"textbox","id":"sh/h83ytwbu","slide":7,"text":"regras determinísticas","textPreview":"regras determinísticas","textChars":22,"textLines":1,"bbox":[358,312,174,44]}
+{"kind":"shape","id":"sh/h8ril47q","slide":7,"bbox":[600,235,210,150]}
+{"kind":"textbox","id":"sh/w7ihczq5","slide":7,"text":"Intenção","textPreview":"Intenção","textChars":8,"textLines":1,"bbox":[618,260,174,42]}
+{"kind":"textbox","id":"sh/v690jupk","slide":7,"text":"ação proposta","textPreview":"ação proposta","textChars":13,"textLines":1,"bbox":[618,312,174,44]}
+{"kind":"shape","id":"sh/u50zap8f","slide":7,"bbox":[860,235,210,150]}
+{"kind":"textbox","id":"sh/94rihk7u","slide":7,"text":"Decisão humana","textPreview":"Decisão humana","textChars":14,"textLines":1,"bbox":[878,260,174,42]}
+{"kind":"textbox","id":"sh/83ih8fq9","slide":7,"text":"aprovar ou rejeitar","textPreview":"aprovar ou rejeitar","textChars":19,"textLines":1,"bbox":[878,312,174,44]}
+{"kind":"shape","id":"sh/7290fupo","slide":7,"bbox":[390,470,500,92]}
+{"kind":"textbox","id":"sh/m1gz6p83","slide":7,"text":"Sem executor bancário no MVP","textPreview":"Sem executor bancário no MVP","textChars":28,"textLines":1,"bbox":[410,489,460,50]}
+{"kind":"textbox","id":"sh/t0bito7y","slide":7,"text":"Aprovar muda o estado da intenção. O campo executionAvailable permanece falso.","textPreview":"Aprovar muda o estado da intenção. O campo executionAvailable permanece falso.","textChars":78,"textLines":1,"bbox":[230,610,820,38]}
+{"kind":"notes","id":"nt/2n5831","slide":7,"text":"Este é o limite de confiança do produto atual. A aplicação recomenda e registra a decisão, mas não movimenta dinheiro. Uma integração futura precisará passar por um orquestrador determinístico e um conector regulado."}
+{"kind":"slide","id":"sl/yfevua","slide":8,"title":"Arquitetura preparada para evoluir","textShapes":21}
+{"kind":"textbox","id":"sh/k3ylsj6h","slide":8,"text":"Arquitetura preparada para evoluir","textPreview":"Arquitetura preparada para evoluir","textChars":34,"textLines":1,"bbox":[70,42,1030,66]}
+{"kind":"textbox","id":"sh/j2pkjepw","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1150,48,60,38]}
+{"kind":"textbox","id":"sh/i1g3q9ob","slide":8,"text":"MONÓLITO MODULAR","textPreview":"MONÓLITO MODULAR","textChars":16,"textLines":1,"bbox":[80,132,260,28]}
+{"kind":"textbox","id":"sh/x072h47q","slide":8,"text":"Uma implantação com fronteiras por domínio","textPreview":"Uma implantação com fronteiras por domínio","textChars":42,"textLines":1,"bbox":[80,169,430,72]}
+{"kind":"shape","id":"sh/wzyloz6l","slide":8,"bbox":[80,280,98,48]}
+{"kind":"textbox","id":"sh/vypkfep0","slide":8,"text":"profile","textPreview":"profile","textChars":7,"textLines":1,"bbox":[84,289,90,30]}
+{"kind":"shape","id":"sh/axg3m9of","slide":8,"bbox":[192,280,98,48]}
+{"kind":"textbox","id":"sh/hwbmt87a","slide":8,"text":"account","textPreview":"account","textChars":7,"textLines":1,"bbox":[196,289,90,30]}
+{"kind":"shape","id":"sh/gvil036p","slide":8,"bbox":[304,280,98,48]}
+{"kind":"textbox","id":"sh/65g3ytgv","slide":8,"text":"transaction","textPreview":"transaction","textChars":11,"textLines":1,"bbox":[308,289,90,30]}
+{"kind":"shape","id":"sh/7694ryxg","slide":8,"bbox":[416,280,98,48]}
+{"kind":"textbox","id":"sh/s7il03y1","slide":8,"text":"planning","textPreview":"planning","textChars":8,"textLines":1,"bbox":[420,289,90,30]}
+{"kind":"shape","id":"sh/t8rmt8fm","slide":8,"bbox":[80,352,98,48]}
+{"kind":"textbox","id":"sh/yhg3utgz","slide":8,"text":"portfolio","textPreview":"portfolio","textChars":9,"textLines":1,"bbox":[84,361,90,30]}
+{"kind":"shape","id":"sh/jip4nyxk","slide":8,"bbox":[192,352,98,48]}
+{"kind":"textbox","id":"sh/kjylw3yp","slide":8,"text":"openfinance","textPreview":"openfinance","textChars":11,"textLines":1,"bbox":[196,361,90,30]}
+{"kind":"shape","id":"sh/5k7mp8fa","slide":8,"bbox":[304,352,98,48]}
+{"kind":"textbox","id":"sh/2d036dw3","slide":8,"text":"report","textPreview":"report","textChars":6,"textLines":1,"bbox":[308,361,90,30]}
+{"kind":"shape","id":"sh/3et4zixo","slide":8,"bbox":[570,135,0,455]}
+{"kind":"textbox","id":"sh/zil0rad0","slide":8,"text":"RESILIÊNCIA","textPreview":"RESILIÊNCIA","textChars":11,"textLines":1,"bbox":[635,132,260,28]}
+{"kind":"textbox","id":"sh/ehcji5wf","slide":8,"text":"Idempotência","textPreview":"Idempotência","textChars":12,"textLines":1,"bbox":[635,178,200,36]}
+{"kind":"textbox","id":"sh/1k3itkv6","slide":8,"text":"repetição segura na importação","textPreview":"repetição segura na importação","textChars":30,"textLines":1,"bbox":[845,178,330,44]}
+{"kind":"shape","id":"sh/0ju1kfel","slide":8,"bbox":[635,250,540,0]}
+{"kind":"textbox","id":"sh/nml0vudc","slide":8,"text":"Persistência","textPreview":"Persistência","textChars":12,"textLines":1,"bbox":[635,283,200,36]}
+{"kind":"textbox","id":"sh/mlcjmpwr","slide":8,"text":"Flyway e restrições de unicidade","textPreview":"Flyway e restrições de unicidade","textChars":32,"textLines":1,"bbox":[845,283,330,44]}
+{"kind":"shape","id":"sh/9onix4v2","slide":8,"bbox":[635,355,540,0]}
+{"kind":"textbox","id":"sh/one1ozeh","slide":8,"text":"Erros","textPreview":"Erros","textChars":5,"textLines":1,"bbox":[635,388,200,36]}
+{"kind":"textbox","id":"sh/bq50zud8","slide":8,"text":"contrato RFC 9457 sem detalhes internos","textPreview":"contrato RFC 9457 sem detalhes internos","textChars":39,"textLines":1,"bbox":[845,388,330,44]}
+{"kind":"shape","id":"sh/apwjq9wn","slide":8,"bbox":[635,460,540,0]}
+{"kind":"textbox","id":"sh/8fyhgza1","slide":8,"text":"Auditoria","textPreview":"Auditoria","textChars":9,"textLines":1,"bbox":[635,493,200,36]}
+{"kind":"textbox","id":"sh/tg7ip4b6","slide":8,"text":"eventos para mudanças relevantes","textPreview":"eventos para mudanças relevantes","textChars":32,"textLines":1,"bbox":[845,493,330,44]}
+{"kind":"textbox","id":"sh/6dwze9sv","slide":8,"text":"Stack: Java 17, Kotlin 2.3.21, Spring Boot 4.1.0, PostgreSQL 17 e Gradle 9.5.1","textPreview":"Stack: Java 17, Kotlin 2.3.21, Spring Boot 4.1.0, PostgreSQL 17 e Gradle 9.5.1","textChars":78,"textLines":1,"bbox":[80,625,1080,34]}
+{"kind":"notes","id":"nt/yfevua","slide":8,"text":"O monólito modular reduz o custo operacional do MVP sem misturar os domínios. A resiliência atual inclui idempotência, migrations, restrições no banco, auditoria e respostas de erro estáveis."}
+{"kind":"slide","id":"sl/g0tg7z","slide":9,"title":"Próximos passos do produto","textShapes":12}
+{"kind":"textbox","id":"sh/jml47upw","slide":9,"text":"Próximos passos do produto","textPreview":"Próximos passos do produto","textChars":26,"textLines":1,"bbox":[70,42,1030,66]}
+{"kind":"textbox","id":"sh/4nu5gfqh","slide":9,"text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1150,48,60,38]}
+{"kind":"textbox","id":"sh/5onm9k72","slide":9,"text":"AGORA","textPreview":"AGORA","textChars":5,"textLines":1,"bbox":[80,160,260,28]}
+{"kind":"textbox","id":"sh/69wnipon","slide":9,"text":"MVP operacional","textPreview":"MVP operacional","textChars":15,"textLines":1,"bbox":[80,207,285,58]}
+{"kind":"textbox","id":"sh/ra54bup8","slide":9,"text":"Planejamento, relatórios e intenções auditáveis","textPreview":"Planejamento, relatórios e intenções auditáveis","textChars":47,"textLines":1,"bbox":[80,280,285,130]}
+{"kind":"shape","id":"sh/sbe5kz6d","slide":9,"bbox":[80,438,285,5]}
+{"kind":"textbox","id":"sh/tcn6d47y","slide":9,"text":"PRÓXIMO","textPreview":"PRÓXIMO","textChars":7,"textLines":1,"bbox":[425,160,260,28]}
+{"kind":"textbox","id":"sh/edwnm9oj","slide":9,"text":"Open Finance real","textPreview":"Open Finance real","textChars":17,"textLines":1,"bbox":[425,207,285,58]}
+{"kind":"textbox","id":"sh/fe5ofep4","slide":9,"text":"OAuth, sincronização paginada, webhooks e tokens protegidos","textPreview":"OAuth, sincronização paginada, webhooks e tokens protegidos","textChars":59,"textLines":1,"bbox":[425,280,285,130]}
+{"kind":"shape","id":"sh/nahwf25w","slide":9,"bbox":[425,438,285,5]}
+{"kind":"textbox","id":"sh/m98vmxob","slide":9,"text":"DEPOIS","textPreview":"DEPOIS","textChars":6,"textLines":1,"bbox":[770,160,260,28]}
+{"kind":"textbox","id":"sh/9czehsn2","slide":9,"text":"Execução controlada","textPreview":"Execução controlada","textChars":19,"textLines":1,"bbox":[770,207,285,58]}
+{"kind":"textbox","id":"sh/8bqdo76h","slide":9,"text":"Outbox, reconciliação, limites e conectores regulados","textPreview":"Outbox, reconciliação, limites e conectores regulados","textChars":53,"textLines":1,"bbox":[770,280,285,130]}
+{"kind":"shape","id":"sh/zmhwbi50","slide":9,"bbox":[770,438,285,5]}
+{"kind":"shape","id":"sh/elovidof","slide":9,"bbox":[80,510,975,0]}
+{"kind":"textbox","id":"sh/lozedsnq","slide":9,"text":"FinFlow já demonstra a lógica central do produto: transformar dados financeiros em decisões explicáveis, sem abrir mão de controle.","textPreview":"FinFlow já demonstra a lógica central do produto: transformar dados financeiros em decisões explicáveis, sem abrir mão de controle.","textChars":131,"textLines":1,"bbox":[125,555,920,88]}
+{"kind":"notes","id":"nt/g0tg7z","slide":9,"text":"Feche mostrando que o MVP prova a lógica central. O próximo salto é trocar o registro local de consentimento por uma integração real, mantendo a separação entre recomendação, autorização e execução."}

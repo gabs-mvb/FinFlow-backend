@@ -1,6 +1,7 @@
 package com.finflow.shared.security
 
 import jakarta.servlet.FilterChain
+import jakarta.servlet.DispatcherType
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
@@ -48,7 +49,8 @@ class ApiKeySecurityConfig {
         .csrf { it.disable() }
         .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
         .authorizeHttpRequests {
-            it.requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
+            it.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                .requestMatchers("/error", "/actuator/health/**", "/actuator/info").permitAll()
                 .anyRequest().authenticated()
         }
         .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)

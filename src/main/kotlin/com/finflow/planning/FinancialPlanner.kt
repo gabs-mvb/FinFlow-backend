@@ -36,6 +36,10 @@ data class PlannerResult(
 )
 
 object FinancialPlanner {
+    /**
+     * Distribui apenas o caixa disponível até a próxima renda. A ordem protege
+     * obrigações e caixa mínimo antes de dívida cara, reserva e investimento.
+     */
     fun calculate(input: PlannerInput): PlannerResult {
         require(input.payDay in 1..28) { "Dia de recebimento inválido" }
         require(input.operatingBalance >= BigDecimal.ZERO) { "Saldo operacional não pode ser negativo" }
@@ -109,4 +113,3 @@ object FinancialPlanner {
 }
 
 private fun BigDecimal.moneyScale(): BigDecimal = setScale(2, RoundingMode.HALF_EVEN)
-

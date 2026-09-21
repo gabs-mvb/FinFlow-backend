@@ -69,6 +69,10 @@ class FinancialTransactionService(
     private val auditService: AuditService,
     private val clock: Clock,
 ) {
+    /**
+     * Importa um lote uma única vez por chave de idempotência. Itens repetidos
+     * no lote ou já associados à conta entram na contagem de duplicados.
+     */
     @Transactional
     fun importTransactions(
         idempotencyKey: String,
@@ -147,6 +151,7 @@ class FinancialTransactionService(
         return ImportTransactionsResponse(newTransactions.size, duplicates, false)
     }
 
+    /** Lista transações no intervalo fechado, com filtro opcional de categoria. */
     @Transactional
     fun list(
         from: OffsetDateTime,
@@ -179,4 +184,3 @@ private fun FinancialTransactionEntity.toResponse(): FinancialTransactionRespons
         categorizationSource = categorizationSource,
         occurredAt = occurredAt,
     )
-

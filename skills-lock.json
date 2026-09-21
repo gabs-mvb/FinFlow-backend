@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "kotlin-expert": {
+      "source": "personamanagmentlayer/pcl",
+      "sourceType": "github",
+      "skillPath": "stdlib/languages/kotlin-expert/SKILL.md",
+      "computedHash": "77d22bdc4d958e9e7b4d91b4ab47fc477d7ac103691646a94ec09d849b1196ba"
+    }
+  }
+}

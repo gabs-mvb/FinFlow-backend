@@ -1,6 +1,7 @@
 package com.finflow.planning
 
 import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -26,7 +27,9 @@ class FinancialPlanController(
     ): FinancialPlanResponse = service.generate(asOf ?: LocalDate.now(clock))
 
     @GetMapping("/latest")
-    fun latest(): org.springframework.http.ResponseEntity<FinancialPlanResponse> = service.latest()
+    fun latest(): ResponseEntity<FinancialPlanResponse> = service.latest()
+        ?.let { ResponseEntity.ok(it) }
+        ?: ResponseEntity.noContent().build()
 
     @PatchMapping("/actions/{id}/approve")
     fun approve(@PathVariable id: UUID): ActionIntentResponse = service.reviewAction(id, true)
