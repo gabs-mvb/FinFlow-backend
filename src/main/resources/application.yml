@@ -1,10 +1,12 @@
 spring:
   application:
     name: FinFlow
+  profiles:
+    default: local
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/finflow}
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:admin}
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
   jpa:
     open-in-view: false
     hibernate:
@@ -15,10 +17,13 @@ spring:
           time_zone: UTC
   flyway:
     enabled: true
+    validateOnMigrate: false
+    outOfOrder: false
   jackson:
     default-property-inclusion: non_null
 
 server:
+  port: ${PORT:8080}
   shutdown: graceful
 
 management:
@@ -32,12 +37,11 @@ management:
         enabled: true
 
 jwt:
-  secret: ${JWT_SECRET:dHJhY2tzYWZlZG9lc2VhcmxpZXJzaGVlcGZvb3RiYWxsb2JqZWN0cGxhaW5zaGVsdGVtZW4xZ3k5bW9weWM1ZzZnb3l6dmxwcXZ4YXpyZnF3aXVkeWF3eXN4dDZydGxpbmVxYnR5Ykl0ZWxxcnN3MA==}
+  secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}
 
 finflow:
   security:
-    api-key: dHJhY2tzYWZlZG9lc2VhcmxpZXJzaGVlcGZvb3RiYWxsb2JqZWN0cGxhaW5zaGVsdGU=
+    allowed-origins: ${ALLOWED_ORIGINS}
   open-finance:
     provider: ${OPEN_FINANCE_PROVIDER:disabled}
-

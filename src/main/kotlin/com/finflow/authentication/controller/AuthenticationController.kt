@@ -5,6 +5,8 @@ import com.finflow.authentication.domain.dto.LoginResponseDto
 import com.finflow.authentication.domain.dto.RegisterRequestDto
 import com.finflow.authentication.domain.dto.UserResponseDto
 import com.finflow.authentication.service.AuthenticationService
+import jakarta.validation.Valid
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -18,13 +20,16 @@ class AuthenticationController(
     private val authenticationService: AuthenticationService
 ) {
 
+    @GetMapping("/me")
+    fun me(): UserResponseDto = authenticationService.me()
+
     @PostMapping("/login")
-    fun login(@RequestBody loginRequest: LoginRequestDto): ResponseEntity<LoginResponseDto> {
+    fun login(@Valid @RequestBody loginRequest: LoginRequestDto): ResponseEntity<LoginResponseDto> {
         return ResponseEntity.ok(authenticationService.login(loginRequest))
     }
 
     @PostMapping("/register")
-    fun register(@RequestBody registerRequest: RegisterRequestDto): ResponseEntity<UserResponseDto> {
+    fun register(@Valid @RequestBody registerRequest: RegisterRequestDto): ResponseEntity<UserResponseDto> {
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(authenticationService.register(registerRequest))
     }

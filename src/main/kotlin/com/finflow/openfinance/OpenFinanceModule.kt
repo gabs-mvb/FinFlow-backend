@@ -45,6 +45,8 @@ enum class ConsentScope {
 @Entity
 @Table(name = "open_finance_consents")
 class OpenFinanceConsentEntity(
+    @Column(name = "user_id", updatable = false)
+    var userId: Int? = null,
     @Id var id: UUID = UUID.randomUUID(),
     @Column(nullable = false, length = 80) var provider: String = "",
     @Column(name = "external_consent_id", nullable = false, length = 180)
@@ -59,12 +61,14 @@ class OpenFinanceConsentEntity(
 )
 
 interface OpenFinanceConsentRepository : JpaRepository<OpenFinanceConsentEntity, UUID> {
-    fun findByProviderIgnoreCaseAndExternalConsentId(
+    fun findByUserIdAndProviderIgnoreCaseAndExternalConsentId(
+        userId: Int,
         provider: String,
         externalConsentId: String,
     ): OpenFinanceConsentEntity?
 
-    fun findAllByStatus(status: ConsentStatus): List<OpenFinanceConsentEntity>
+    fun findAllByUserId(userId: Int): List<OpenFinanceConsentEntity>
+    fun findAllByUserIdAndStatus(userId: Int, status: ConsentStatus): List<OpenFinanceConsentEntity>
 }
 
 data class RegisterConsentRequest(
@@ -96,6 +100,7 @@ data class OpenFinanceIntegrationStatus(
 
 @Service
 class OpenFinanceConsentService(
+    private val currentUser: com.finflow.shared.security.CurrentUser,
     private val repository: OpenFinanceConsentRepository,
     private val auditService: AuditService,
     private val clock: Clock,
@@ -107,10 +112,11 @@ class OpenFinanceConsentService(
             "Consentimento ativo exige uma expiração futura"
         }
         val now = OffsetDateTime.now(clock)
-        val entity = repository.findByProviderIgnoreCaseAndExternalConsentId(
-            request.provider,
-            request.externalConsentId,
-        ) ?: OpenFinanceConsentEntity(createdAt = now)
+        val entity = repository.findByUserIdAndProviderIgnoreCaseAndExternalConsentId(
+            currentUser.id(),
+            request.provider.trim(),
+            request.externalConsentId.trim(),
+        ) ?: OpenFinanceConsentEntity(userId = currentUser.id(), createdAt = now)
         entity.apply {
             provider = request.provider.trim()
             externalConsentId = request.externalConsentId.trim()
@@ -131,14 +137,14 @@ class OpenFinanceConsentService(
     }
 
     @Transactional
-    fun list(): List<ConsentResponse> = repository.findAll().map { it.toResponse() }
+    fun list(): List<ConsentResponse> = repository.findAllByUserId(currentUser.id()).map { it.toResponse() }
 
     /** Consulta o relógio da aplicação para desconsiderar consentimentos vencidos. */
     @Transactional
     fun hasActiveConsent(): Boolean = hasActiveConsentAt(OffsetDateTime.now(clock))
 
     internal fun hasActiveConsentAt(now: OffsetDateTime): Boolean =
-        repository.findAllByStatus(ConsentStatus.ACTIVE)
+        repository.findAllByUserIdAndStatus(currentUser.id(), ConsentStatus.ACTIVE)
             .any { consent -> consent.expiresAt?.isAfter(now) == true }
 
     fun integrationStatus(): OpenFinanceIntegrationStatus {

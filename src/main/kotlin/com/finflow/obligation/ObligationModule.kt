@@ -53,6 +53,8 @@ enum class ObligationStatus {
 @Entity
 @Table(name = "obligations")
 class ObligationEntity(
+    @Column(name = "user_id", updatable = false)
+    var userId: Int? = null,
     @Id var id: UUID = UUID.randomUUID(),
     @Column(nullable = false, length = 160)
     var name: String = "",
@@ -75,7 +77,10 @@ class ObligationEntity(
 )
 
 interface ObligationRepository : JpaRepository<ObligationEntity, UUID> {
-    fun findAllByStatusAndDueDateBetween(
+    fun findAllByUserId(userId: Int): List<ObligationEntity>
+    fun findByIdAndUserId(id: UUID, userId: Int): ObligationEntity?
+    fun findAllByUserIdAndStatusAndDueDateBetween(
+        userId: Int,
         status: ObligationStatus,
         from: LocalDate,
         to: LocalDate,
@@ -101,6 +106,7 @@ data class ObligationResponse(
 
 @Service
 class ObligationService(
+    private val currentUser: com.finflow.shared.security.CurrentUser,
     private val repository: ObligationRepository,
     private val auditService: AuditService,
     private val clock: Clock,
@@ -112,6 +118,7 @@ class ObligationService(
         val now = OffsetDateTime.now(clock)
         val saved = repository.save(
             ObligationEntity(
+                userId = currentUser.id(),
                 name = request.name.trim(),
                 obligationType = request.type,
                 amount = money.amount,
@@ -126,14 +133,14 @@ class ObligationService(
     }
 
     @Transactional
-    fun list(): List<ObligationResponse> = repository.findAll()
+    fun list(): List<ObligationResponse> = repository.findAllByUserId(currentUser.id())
         .sortedBy { it.dueDate }
         .map { it.toResponse() }
 
     @Transactional
     fun markPaid(id: UUID): ObligationResponse {
-        val obligation = repository.findById(id)
-            .orElseThrow { ResourceNotFoundException("Obrigação não encontrada") }
+        val obligation = repository.findByIdAndUserId(id, currentUser.id())
+            ?: throw ResourceNotFoundException("Obrigação não encontrada")
         obligation.status = ObligationStatus.PAID
         obligation.updatedAt = OffsetDateTime.now(clock)
         auditService.record("OBLIGATION_PAID", "OBLIGATION", id)

@@ -18,6 +18,8 @@ import java.util.UUID
 @Entity
 @Table(name = "financial_plans")
 class FinancialPlanEntity(
+    @Column(name = "user_id", updatable = false)
+    var userId: Int? = null,
     @Id var id: UUID = UUID.randomUUID(),
     @Column(name = "as_of", nullable = false) var asOf: LocalDate = LocalDate.now(),
     @Column(name = "next_income_date", nullable = false) var nextIncomeDate: LocalDate = LocalDate.now(),
@@ -83,10 +85,11 @@ class ActionIntentEntity(
 )
 
 interface FinancialPlanRepository : JpaRepository<FinancialPlanEntity, UUID> {
-    fun findFirstByOrderByGeneratedAtDesc(): FinancialPlanEntity?
+    fun findFirstByUserIdOrderByGeneratedAtDesc(userId: Int): FinancialPlanEntity?
 }
 
 interface ActionIntentRepository : JpaRepository<ActionIntentEntity, UUID> {
-    fun findAllByPlanId(planId: UUID): List<ActionIntentEntity>
+    fun findAllByPlanIdAndPlanUserId(planId: UUID, userId: Int): List<ActionIntentEntity>
+    fun findByIdAndPlanUserId(id: UUID, userId: Int): ActionIntentEntity?
 }
 

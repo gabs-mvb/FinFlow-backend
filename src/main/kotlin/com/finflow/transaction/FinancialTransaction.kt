@@ -85,7 +85,8 @@ class FinancialTransactionEntity(
 
 interface FinancialTransactionRepository : JpaRepository<FinancialTransactionEntity, UUID> {
     fun existsByAccountIdAndExternalId(accountId: UUID, externalId: String): Boolean
-    fun findAllByOccurredAtBetweenOrderByOccurredAtDesc(
+    fun findAllByAccountUserIdAndOccurredAtBetweenOrderByOccurredAtDesc(
+        userId: Int,
         from: OffsetDateTime,
         to: OffsetDateTime,
     ): List<FinancialTransactionEntity>
@@ -96,10 +97,12 @@ interface FinancialTransactionRepository : JpaRepository<FinancialTransactionEnt
     name = "idempotency_records",
     uniqueConstraints = [UniqueConstraint(
         name = "uk_idempotency_operation_key",
-        columnNames = ["operation", "key_hash"],
+        columnNames = ["user_id", "operation", "key_hash"],
     )],
 )
 class IdempotencyRecordEntity(
+    @Column(name = "user_id", updatable = false)
+    var userId: Int? = null,
     @Id
     var id: UUID = UUID.randomUUID(),
     @Column(nullable = false, length = 80)
@@ -117,6 +120,6 @@ class IdempotencyRecordEntity(
 )
 
 interface IdempotencyRecordRepository : JpaRepository<IdempotencyRecordEntity, UUID> {
-    fun findByOperationAndKeyHash(operation: String, keyHash: String): IdempotencyRecordEntity?
+    fun findByUserIdAndOperationAndKeyHash(userId: Int, operation: String, keyHash: String): IdempotencyRecordEntity?
 }
 

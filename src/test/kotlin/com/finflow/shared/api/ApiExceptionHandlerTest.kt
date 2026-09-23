@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.MediaType
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
@@ -15,9 +16,9 @@ class ApiExceptionHandlerTest @Autowired constructor(
     private val mockMvc: MockMvc,
 ) {
     @Test
+    @WithMockUser
     fun `returns a stable error for malformed json`() {
         mockMvc.post("/api/v1/accounts") {
-            header("X-API-Key", "test-api-key")
             contentType = MediaType.APPLICATION_JSON
             content = "{\"institution\":"
         }.andExpect {
@@ -29,9 +30,9 @@ class ApiExceptionHandlerTest @Autowired constructor(
     }
 
     @Test
+    @WithMockUser
     fun `identifies an invalid query parameter without exposing framework details`() {
         mockMvc.get("/api/v1/transactions") {
-            header("X-API-Key", "test-api-key")
             param("from", "2026-09-01T00:00:00Z")
             param("to", "2026-09-20T00:00:00Z")
             param("category", "UNKNOWN")

@@ -121,7 +121,7 @@ runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
 ### Banco de Dados
 
-Arquivo: `src/main/resources/db/migration/V2__Create_users_table.sql`
+Arquivo: `../src/main/resources/db/migration/V2__Create_users_table.sql`
 
 Cria tabela `users` com:
 - `id` - Chave primária

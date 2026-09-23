@@ -42,6 +42,7 @@ data class MonthlyFinancialReport(
 
 @Service
 class MonthlyReportService(
+    private val currentUser: com.finflow.shared.security.CurrentUser,
     private val transactionRepository: FinancialTransactionRepository,
     private val profileService: FinancialProfileService,
 ) {
@@ -56,7 +57,7 @@ class MonthlyReportService(
         val currency = Currency.getInstance(profile.currency)
         val from = period.atDay(1).atStartOfDay().atOffset(ZoneOffset.UTC)
         val to = period.plusMonths(1).atDay(1).atStartOfDay().atOffset(ZoneOffset.UTC).minusNanos(1)
-        val transactions = transactionRepository.findAllByOccurredAtBetweenOrderByOccurredAtDesc(from, to)
+        val transactions = transactionRepository.findAllByAccountUserIdAndOccurredAtBetweenOrderByOccurredAtDesc(currentUser.id(), from, to)
             .filter { it.currency == profile.currency }
         val income = transactions.filter {
             it.transactionType == TransactionType.CREDIT && it.category != TransactionCategory.TRANSFER

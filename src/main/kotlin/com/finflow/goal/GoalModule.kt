@@ -42,6 +42,8 @@ enum class GoalStatus { ACTIVE, ACHIEVED, CANCELLED }
 @Entity
 @Table(name = "financial_goals")
 class GoalEntity(
+    @Column(name = "user_id", updatable = false)
+    var userId: Int? = null,
     @Id var id: UUID = UUID.randomUUID(),
     @Column(nullable = false, length = 160) var name: String = "",
     @Column(name = "target_amount", nullable = false, precision = 19, scale = 2)
@@ -57,7 +59,10 @@ class GoalEntity(
     @Column(name = "updated_at", nullable = false) var updatedAt: OffsetDateTime = OffsetDateTime.now(),
 )
 
-interface GoalRepository : JpaRepository<GoalEntity, UUID>
+interface GoalRepository : JpaRepository<GoalEntity, UUID> {
+    fun findAllByUserId(userId: Int): List<GoalEntity>
+    fun findByIdAndUserId(id: UUID, userId: Int): GoalEntity?
+}
 
 data class CreateGoalRequest(
     @field:NotBlank @field:Size(max = 160) val name: String,
@@ -81,6 +86,7 @@ data class GoalResponse(
 
 @Service
 class GoalService(
+    private val currentUser: com.finflow.shared.security.CurrentUser,
     private val repository: GoalRepository,
     private val auditService: AuditService,
     private val clock: Clock,
@@ -97,6 +103,7 @@ class GoalService(
         val now = OffsetDateTime.now(clock)
         val saved = repository.save(
             GoalEntity(
+                userId = currentUser.id(),
                 name = request.name.trim(), targetAmount = target.amount, currentAmount = current.amount,
                 currency = target.currency.currencyCode, targetDate = request.targetDate,
                 priority = request.priority,
@@ -109,11 +116,12 @@ class GoalService(
     }
 
     @Transactional
-    fun list(): List<GoalResponse> = repository.findAll().sortedBy { it.priority }.map { it.toResponse() }
+    fun list(): List<GoalResponse> = repository.findAllByUserId(currentUser.id()).sortedBy { it.priority }.map { it.toResponse() }
 
     @Transactional
     fun updateProgress(id: UUID, request: UpdateGoalProgressRequest): GoalResponse {
-        val goal = repository.findById(id).orElseThrow { ResourceNotFoundException("Meta não encontrada") }
+        val goal = repository.findByIdAndUserId(id, currentUser.id())
+            ?: throw ResourceNotFoundException("Meta não encontrada")
         val current = request.currentAmount.toMoney()
         require(current.currency.currencyCode == goal.currency) { "A moeda da meta não pode ser alterada" }
         if (current.amount > goal.targetAmount) {

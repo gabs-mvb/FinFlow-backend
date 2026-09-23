@@ -63,16 +63,23 @@ class JwtAuthenticationFilter(
     private fun addUsernameInContext(request: HttpServletRequest, username: String, jwtToken: String?) {
         if (jwtToken.isNullOrBlank()) return
 
-        val userDetails = userDetailsService.loadUserByUsername(username)
+        try {
+            val userDetails = userDetailsService.loadUserByUsername(username)
 
-        if (jwtTokenProvider.validateToken(jwtToken, userDetails.username)) {
-            val authenticationToken = UsernamePasswordAuthenticationToken(
-                userDetails,
-                null,
-                userDetails.authorities
+            if (userDetails.isEnabled && jwtTokenProvider.validateToken(jwtToken, userDetails.username)) {
+                val authenticationToken = UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    userDetails.authorities
+                )
+                authenticationToken.details = WebAuthenticationDetailsSource().buildDetails(request)
+                SecurityContextHolder.getContext().authentication = authenticationToken
+            }
+        } catch (e: Exception) {
+            LoggerFactory.getLogger(JwtAuthenticationFilter::class.java).debug(
+                "User not found or token validation failed for username: {}", 
+                username
             )
-            authenticationToken.details = WebAuthenticationDetailsSource().buildDetails(request)
-            SecurityContextHolder.getContext().authentication = authenticationToken
         }
     }
 }

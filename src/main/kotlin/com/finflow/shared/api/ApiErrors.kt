@@ -26,6 +26,9 @@ class ResourceNotFoundException(message: String) :
 class BusinessRuleException(message: String, code: String = "BUSINESS_RULE_VIOLATION") :
     ApiException(HttpStatus.UNPROCESSABLE_ENTITY, code, message)
 
+class OnboardingRequiredException :
+    ApiException(HttpStatus.FORBIDDEN, "ONBOARDING_REQUIRED", "Conclua a configuração inicial para continuar")
+
 class ConflictException(message: String, code: String = "CONFLICT") :
     ApiException(HttpStatus.CONFLICT, code, message)
 
@@ -113,6 +116,23 @@ class ApiExceptionHandler {
             request,
         )
     }
+
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException::class)
+    fun handleAuthentication(
+        exception: org.springframework.security.core.AuthenticationException,
+        request: HttpServletRequest,
+    ): ResponseEntity<ProblemDetail> = problem(
+        HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Credenciais inválidas ou sessão expirada", request,
+    )
+
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException::class)
+    fun handleStatus(
+        exception: org.springframework.web.server.ResponseStatusException,
+        request: HttpServletRequest,
+    ): ResponseEntity<ProblemDetail> = problem(
+        HttpStatus.valueOf(exception.statusCode.value()), "REQUEST_REJECTED",
+        exception.reason ?: "Solicitação recusada", request,
+    )
 
     @ExceptionHandler(Exception::class)
     fun handleUnexpected(

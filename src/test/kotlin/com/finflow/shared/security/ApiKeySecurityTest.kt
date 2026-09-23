@@ -5,11 +5,12 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.post
 import kotlin.test.Test
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class ApiKeySecurityTest @Autowired constructor(
+class JwtSecurityTest @Autowired constructor(
     private val mockMvc: MockMvc,
 ) {
     @Test
@@ -19,15 +20,20 @@ class ApiKeySecurityTest @Autowired constructor(
     }
 
     @Test
-    fun `business endpoint rejects missing api key`() {
+    fun `business endpoint rejects missing jwt token`() {
         mockMvc.get("/api/v1/accounts")
             .andExpect { status { isUnauthorized() } }
     }
 
     @Test
-    fun `business endpoint accepts configured api key`() {
-        mockMvc.get("/api/v1/accounts") {
-            header("X-API-Key", "test-api-key")
-        }.andExpect { status { isOk() } }
+    fun `auth login endpoint is public`() {
+        mockMvc.post("/api/auth/login")
+            .andExpect { status { isBadRequest() } }
+    }
+
+    @Test
+    fun `auth register endpoint is public`() {
+        mockMvc.post("/api/auth/register")
+            .andExpect { status { isBadRequest() } }
     }
 }

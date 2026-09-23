@@ -47,8 +47,10 @@ enum class AssetClass {
 @Entity
 @Table(name = "portfolio_positions")
 class PortfolioPositionEntity(
+    @Column(name = "user_id", updatable = false)
+    var userId: Int? = null,
     @Id var id: UUID = UUID.randomUUID(),
-    @Column(name = "asset_code", nullable = false, unique = true, length = 48)
+    @Column(name = "asset_code", nullable = false, length = 48)
     var assetCode: String = "",
     @Column(name = "asset_name", nullable = false, length = 160)
     var assetName: String = "",
@@ -64,9 +66,11 @@ class PortfolioPositionEntity(
 @Entity
 @Table(name = "allocation_targets")
 class AllocationTargetEntity(
+    @Column(name = "user_id", updatable = false)
+    var userId: Int? = null,
     @Id var id: UUID = UUID.randomUUID(),
     @Enumerated(EnumType.STRING)
-    @Column(name = "asset_class", nullable = false, unique = true, length = 40)
+    @Column(name = "asset_class", nullable = false, length = 40)
     var assetClass: AssetClass = AssetClass.CASH,
     @Column(name = "target_percentage", nullable = false, precision = 7, scale = 4)
     var targetPercentage: BigDecimal = BigDecimal.ZERO,
@@ -76,8 +80,14 @@ class AllocationTargetEntity(
     var maximumPercentage: BigDecimal = BigDecimal.ZERO,
 )
 
-interface PortfolioPositionRepository : JpaRepository<PortfolioPositionEntity, UUID>
-interface AllocationTargetRepository : JpaRepository<AllocationTargetEntity, UUID>
+interface PortfolioPositionRepository : JpaRepository<PortfolioPositionEntity, UUID> {
+    fun findAllByUserId(userId: Int): List<PortfolioPositionEntity>
+    fun deleteAllByUserId(userId: Int)
+}
+interface AllocationTargetRepository : JpaRepository<AllocationTargetEntity, UUID> {
+    fun findAllByUserId(userId: Int): List<AllocationTargetEntity>
+    fun deleteAllByUserId(userId: Int)
+}
 
 data class PortfolioPositionInput(
     @field:NotBlank @field:Size(max = 48) val assetCode: String,
@@ -125,6 +135,7 @@ data class ContributionAllocation(
 
 @Service
 class PortfolioService(
+    private val currentUser: com.finflow.shared.security.CurrentUser,
     private val positionRepository: PortfolioPositionRepository,
     private val targetRepository: AllocationTargetRepository,
     private val auditService: AuditService,
@@ -146,11 +157,14 @@ class PortfolioService(
             )
         }
         val now = OffsetDateTime.now(clock)
-        positionRepository.deleteAllInBatch()
-        targetRepository.deleteAllInBatch()
+        positionRepository.deleteAllByUserId(currentUser.id())
+        targetRepository.deleteAllByUserId(currentUser.id())
+        positionRepository.flush()
+        targetRepository.flush()
         positionRepository.saveAll(request.positions.map { input ->
             val value = input.currentValue.toMoney()
             PortfolioPositionEntity(
+                userId = currentUser.id(),
                 assetCode = input.assetCode.trim().uppercase(),
                 assetName = input.assetName.trim(),
                 assetClass = input.assetClass,
@@ -161,6 +175,7 @@ class PortfolioService(
         })
         targetRepository.saveAll(request.targets.map { input ->
             AllocationTargetEntity(
+                userId = currentUser.id(),
                 assetClass = input.assetClass,
                 targetPercentage = input.targetPercentage,
                 minimumPercentage = input.minimumPercentage,
@@ -173,8 +188,8 @@ class PortfolioService(
 
     @Transactional
     fun get(): PortfolioResponse = PortfolioResponse(
-        positions = positionRepository.findAll().map { it.toResponse() },
-        targets = targetRepository.findAll().map { it.toResponse() },
+        positions = positionRepository.findAllByUserId(currentUser.id()).map { it.toResponse() },
+        targets = targetRepository.findAllByUserId(currentUser.id()).map { it.toResponse() },
     )
 
     /**
@@ -184,9 +199,9 @@ class PortfolioService(
     @Transactional
     fun allocateContribution(contribution: Money): List<ContributionAllocation> {
         if (!contribution.isPositive()) return emptyList()
-        val targets = targetRepository.findAll()
+        val targets = targetRepository.findAllByUserId(currentUser.id())
         if (targets.isEmpty()) return emptyList()
-        val positions = positionRepository.findAll()
+        val positions = positionRepository.findAllByUserId(currentUser.id())
         positions.forEach { position ->
             require(position.currency == contribution.currency.currencyCode) {
                 "A carteira deve estar consolidada na moeda do aporte"

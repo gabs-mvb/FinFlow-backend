@@ -13,6 +13,8 @@ import java.util.UUID
 @Entity
 @Table(name = "audit_events")
 class AuditEventEntity(
+    @Column(name = "user_id", updatable = false)
+    var userId: Int? = null,
     @Id
     var id: UUID = UUID.randomUUID(),
     @Column(nullable = false, length = 80)
@@ -33,6 +35,7 @@ interface AuditEventRepository : JpaRepository<AuditEventEntity, UUID>
 
 @Service
 class AuditService(
+    private val currentUser: com.finflow.shared.security.CurrentUser,
     private val repository: AuditEventRepository,
     private val clock: Clock,
 ) {
@@ -44,6 +47,8 @@ class AuditService(
     ) {
         repository.save(
             AuditEventEntity(
+                userId = currentUser.id(),
+                actor = "user:${currentUser.id()}",
                 action = action,
                 resourceType = resourceType,
                 resourceId = resourceId?.toString(),

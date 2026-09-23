@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    val id: Int = 0,
 
     @Column(nullable = false, length = 100)
     val name: String,
@@ -23,5 +23,8 @@ data class User(
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(nullable = false)
-    var active: Boolean = true
+    var active: Boolean = true,
+
+    @Column(name = "onboarding_completed", nullable = false)
+    var onboardingCompleted: Boolean = false
 )

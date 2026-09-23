@@ -53,19 +53,21 @@ data class FinancialAccountResponse(
 
 @Service
 class FinancialAccountService(
+    private val currentUser: com.finflow.shared.security.CurrentUser,
     private val repository: FinancialAccountRepository,
     private val auditService: AuditService,
     private val clock: Clock,
 ) {
     @Transactional
     fun create(request: CreateAccountRequest): FinancialAccountResponse {
-        if (repository.existsByInstitutionIgnoreCaseAndExternalId(request.institution, request.externalId)) {
+        if (repository.existsByUserIdAndInstitutionIgnoreCaseAndExternalId(currentUser.id(), request.institution.trim(), request.externalId.trim())) {
             throw ConflictException("A conta externa já foi cadastrada", "ACCOUNT_ALREADY_EXISTS")
         }
         val balance = request.availableBalance.toMoney()
         val now = OffsetDateTime.now(clock)
         val account = repository.save(
             FinancialAccountEntity(
+                userId = currentUser.id(),
                 institution = request.institution.trim(),
                 externalId = request.externalId.trim(),
                 name = request.name.trim(),
@@ -95,11 +97,11 @@ class FinancialAccountService(
     }
 
     @Transactional
-    fun list(): List<FinancialAccountResponse> = repository.findAll().map { it.toResponse() }
+    fun list(): List<FinancialAccountResponse> = repository.findAllByUserId(currentUser.id()).map { it.toResponse() }
 
     @Transactional
-    fun getRequired(id: UUID): FinancialAccountEntity = repository.findById(id)
-        .orElseThrow { ResourceNotFoundException("Conta não encontrada") }
+    fun getRequired(id: UUID): FinancialAccountEntity = repository.findByIdAndUserId(id, currentUser.id())
+        ?: throw ResourceNotFoundException("Conta não encontrada")
 }
 
 private fun FinancialAccountEntity.toResponse(): FinancialAccountResponse = FinancialAccountResponse(

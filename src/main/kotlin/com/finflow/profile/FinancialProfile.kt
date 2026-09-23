@@ -27,6 +27,8 @@ enum class AutopilotMode {
 @Entity
 @Table(name = "financial_profiles")
 class FinancialProfileEntity(
+    @Column(name = "user_id", updatable = false)
+    var userId: Int? = null,
     @Id
     var id: UUID = UUID.randomUUID(),
     @Column(nullable = false, length = 3)
@@ -60,6 +62,6 @@ class FinancialProfileEntity(
 )
 
 interface FinancialProfileRepository : JpaRepository<FinancialProfileEntity, UUID> {
-    fun findFirstByOrderByCreatedAtAsc(): FinancialProfileEntity?
+    fun findByUserId(userId: Int): FinancialProfileEntity?
 }
 

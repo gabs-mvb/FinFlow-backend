@@ -62,6 +62,7 @@ data class FinancialTransactionResponse(
 
 @Service
 class FinancialTransactionService(
+    private val currentUser: com.finflow.shared.security.CurrentUser,
     private val repository: FinancialTransactionRepository,
     private val idempotencyRepository: IdempotencyRecordRepository,
     private val accountService: FinancialAccountService,
@@ -80,10 +81,11 @@ class FinancialTransactionService(
     ): ImportTransactionsResponse {
         require(idempotencyKey.isNotBlank()) { "Idempotency-Key é obrigatório" }
         require(idempotencyKey.length <= 200) { "Idempotency-Key excede 200 caracteres" }
+        val account = accountService.getRequired(request.accountId)
         val keyHash = sha256(idempotencyKey)
         val requestHash = sha256(request.toString())
         val operation = "TRANSACTION_IMPORT"
-        idempotencyRepository.findByOperationAndKeyHash(operation, keyHash)?.let { record ->
+        idempotencyRepository.findByUserIdAndOperationAndKeyHash(currentUser.id(), operation, keyHash)?.let { record ->
             if (record.requestHash != requestHash) {
                 throw ConflictException(
                     "A mesma chave de idempotência foi usada com outro payload",
@@ -97,7 +99,6 @@ class FinancialTransactionService(
             )
         }
 
-        val account = accountService.getRequired(request.accountId)
         val uniqueItems = request.transactions.distinctBy { it.externalId }
         var duplicates = request.transactions.size - uniqueItems.size
         val now = OffsetDateTime.now(clock)
@@ -134,6 +135,7 @@ class FinancialTransactionService(
         repository.saveAll(newTransactions)
         idempotencyRepository.save(
             IdempotencyRecordEntity(
+                userId = currentUser.id(),
                 operation = operation,
                 keyHash = keyHash,
                 requestHash = requestHash,
@@ -159,7 +161,7 @@ class FinancialTransactionService(
         category: TransactionCategory?,
     ): List<FinancialTransactionResponse> {
         require(!to.isBefore(from)) { "O período final deve ser posterior ao inicial" }
-        return repository.findAllByOccurredAtBetweenOrderByOccurredAtDesc(from, to)
+        return repository.findAllByAccountUserIdAndOccurredAtBetweenOrderByOccurredAtDesc(currentUser.id(), from, to)
             .asSequence()
             .filter { category == null || it.category == category }
             .map { it.toResponse() }

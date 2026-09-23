@@ -4,11 +4,16 @@ import com.finflow.account.AccountPurpose
 import com.finflow.account.AccountType
 import com.finflow.account.CreateAccountRequest
 import com.finflow.account.FinancialAccountService
+import com.finflow.authentication.domain.User
+import com.finflow.authentication.domain.UserRepository
 import com.finflow.shared.api.ConflictException
 import com.finflow.shared.domain.MoneyInput
 import jakarta.transaction.Transactional
+import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.security.test.context.support.TestExecutionEvent
+import org.springframework.security.test.context.support.WithUserDetails
 import java.math.BigDecimal
 import java.time.OffsetDateTime
 import kotlin.test.Test
@@ -18,10 +23,25 @@ import kotlin.test.assertTrue
 
 @SpringBootTest
 @Transactional
+@WithUserDetails(
+    value = "transaction-test@finflow.test",
+    userDetailsServiceBeanName = "customUserDetailsService",
+    setupBefore = TestExecutionEvent.TEST_EXECUTION,
+)
 class FinancialTransactionServiceTest @Autowired constructor(
     private val accountService: FinancialAccountService,
     private val transactionService: FinancialTransactionService,
+    private val users: UserRepository,
 ) {
+    @BeforeEach
+    fun createUser() {
+        users.save(User(
+            name = "Transaction test",
+            email = "transaction-test@finflow.test",
+            password = "unused-test-password",
+        ))
+    }
+
     @Test
     fun `replays the original result for the same idempotency key and payload`() {
         val account = createAccount("idempotency-account")
@@ -76,4 +96,3 @@ class FinancialTransactionServiceTest @Autowired constructor(
             ),
         )
 }
-

@@ -28,6 +28,8 @@ enum class AccountPurpose {
 @Entity
 @Table(name = "financial_accounts")
 class FinancialAccountEntity(
+    @Column(name = "user_id", updatable = false)
+    var userId: Int? = null,
     @Id
     var id: UUID = UUID.randomUUID(),
     @Column(nullable = false, length = 120)
@@ -55,7 +57,9 @@ class FinancialAccountEntity(
 )
 
 interface FinancialAccountRepository : JpaRepository<FinancialAccountEntity, UUID> {
-    fun existsByInstitutionIgnoreCaseAndExternalId(institution: String, externalId: String): Boolean
-    fun findAllByCurrency(currency: String): List<FinancialAccountEntity>
+    fun existsByUserIdAndInstitutionIgnoreCaseAndExternalId(userId: Int, institution: String, externalId: String): Boolean
+    fun findAllByUserId(userId: Int): List<FinancialAccountEntity>
+    fun findByIdAndUserId(id: UUID, userId: Int): FinancialAccountEntity?
+    fun findAllByUserIdAndCurrency(userId: Int, currency: String): List<FinancialAccountEntity>
 }
 

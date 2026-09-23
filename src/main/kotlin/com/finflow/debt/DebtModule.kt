@@ -41,6 +41,8 @@ enum class DebtStatus { ACTIVE, PAID, RENEGOTIATED }
 @Entity
 @Table(name = "debts")
 class DebtEntity(
+    @Column(name = "user_id", updatable = false)
+    var userId: Int? = null,
     @Id var id: UUID = UUID.randomUUID(),
     @Column(nullable = false, length = 160) var name: String = "",
     @Enumerated(EnumType.STRING)
@@ -62,7 +64,9 @@ class DebtEntity(
 )
 
 interface DebtRepository : JpaRepository<DebtEntity, UUID> {
-    fun findAllByStatus(status: DebtStatus): List<DebtEntity>
+    fun findAllByUserId(userId: Int): List<DebtEntity>
+    fun findByIdAndUserId(id: UUID, userId: Int): DebtEntity?
+    fun findAllByUserIdAndStatus(userId: Int, status: DebtStatus): List<DebtEntity>
 }
 
 data class CreateDebtRequest(
@@ -87,6 +91,7 @@ data class DebtResponse(
 
 @Service
 class DebtService(
+    private val currentUser: com.finflow.shared.security.CurrentUser,
     private val repository: DebtRepository,
     private val auditService: AuditService,
     private val clock: Clock,
@@ -100,6 +105,7 @@ class DebtService(
         val now = OffsetDateTime.now(clock)
         val saved = repository.save(
             DebtEntity(
+                userId = currentUser.id(),
                 name = request.name.trim(), debtType = request.type,
                 outstandingAmount = outstanding.amount, monthlyPayment = payment.amount,
                 currency = outstanding.currency.currencyCode,
@@ -112,11 +118,12 @@ class DebtService(
     }
 
     @Transactional
-    fun list(): List<DebtResponse> = repository.findAll().map { it.toResponse() }
+    fun list(): List<DebtResponse> = repository.findAllByUserId(currentUser.id()).map { it.toResponse() }
 
     @Transactional
     fun markPaid(id: UUID): DebtResponse {
-        val debt = repository.findById(id).orElseThrow { ResourceNotFoundException("Dívida não encontrada") }
+        val debt = repository.findByIdAndUserId(id, currentUser.id())
+            ?: throw ResourceNotFoundException("Dívida não encontrada")
         debt.status = DebtStatus.PAID
         debt.outstandingAmount = BigDecimal.ZERO.setScale(2)
         debt.updatedAt = OffsetDateTime.now(clock)

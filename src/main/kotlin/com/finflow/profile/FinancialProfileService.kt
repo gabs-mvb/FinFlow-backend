@@ -61,6 +61,7 @@ data class FinancialProfileResponse(
 @Service
 @Validated
 class FinancialProfileService(
+    private val currentUser: com.finflow.shared.security.CurrentUser,
     private val repository: FinancialProfileRepository,
     private val auditService: AuditService,
     private val clock: Clock,
@@ -75,8 +76,8 @@ class FinancialProfileService(
         requireCurrenciesMatch(currency, essentialExpenses, variableBudget, minimumCashBuffer)
 
         val now = OffsetDateTime.now(clock)
-        val profile = repository.findFirstByOrderByCreatedAtAsc()
-            ?: FinancialProfileEntity(createdAt = now)
+        val profile = repository.findByUserId(currentUser.id())
+            ?: FinancialProfileEntity(userId = currentUser.id(), createdAt = now)
         profile.apply {
             this.currency = currency.currencyCode
             this.monthlyIncome = monthlyIncome.amount
@@ -97,7 +98,7 @@ class FinancialProfileService(
     }
 
     @Transactional
-    fun getRequired(): FinancialProfileEntity = repository.findFirstByOrderByCreatedAtAsc()
+    fun getRequired(): FinancialProfileEntity = repository.findByUserId(currentUser.id())
         ?: throw ResourceNotFoundException("Configure o perfil financeiro antes de calcular o plano")
 
     @Transactional

@@ -16,6 +16,6 @@ jwt:
 
 finflow:
   security:
-    api-key: test-api-key
+    allowed-origins: http://localhost:3000
   open-finance:
     provider: disabled

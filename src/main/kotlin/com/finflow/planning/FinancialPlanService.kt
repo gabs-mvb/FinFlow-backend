@@ -66,6 +66,7 @@ data class FinancialPlanResponse(
 
 @Service
 class FinancialPlanService(
+    private val currentUser: com.finflow.shared.security.CurrentUser,
     private val profileService: FinancialProfileService,
     private val accountRepository: FinancialAccountRepository,
     private val transactionRepository: FinancialTransactionRepository,
@@ -94,7 +95,7 @@ class FinancialPlanService(
     fun generate(asOf: LocalDate): FinancialPlanResponse {
         val profile = profileService.getRequired()
         val currency = Currency.getInstance(profile.currency)
-        val accountsInCurrency = accountRepository.findAllByCurrency(profile.currency)
+        val accountsInCurrency = accountRepository.findAllByUserIdAndCurrency(currentUser.id(), profile.currency)
         val totalBalance = accountsInCurrency.sumOf { it.availableBalance }
         val operatingBalance = accountsInCurrency.filter { it.purpose == AccountPurpose.OPERATING }
             .sumOf { it.availableBalance }
@@ -106,7 +107,8 @@ class FinancialPlanService(
         } else {
             asOf.plusMonths(1).withDayOfMonth(profile.payDay)
         }
-        val obligations = obligationRepository.findAllByStatusAndDueDateBetween(
+        val obligations = obligationRepository.findAllByUserIdAndStatusAndDueDateBetween(
+            currentUser.id(),
             ObligationStatus.PENDING,
             asOf,
             nextIncomeDate.minusDays(1),
@@ -116,14 +118,14 @@ class FinancialPlanService(
         val startOfMonth = asOf.withDayOfMonth(1).atStartOfDay().atOffset(ZoneOffset.UTC)
         val endOfDay = asOf.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC).minusNanos(1)
         val variableSpent = transactionRepository
-            .findAllByOccurredAtBetweenOrderByOccurredAtDesc(startOfMonth, endOfDay)
+            .findAllByAccountUserIdAndOccurredAtBetweenOrderByOccurredAtDesc(currentUser.id(), startOfMonth, endOfDay)
             .filter { transaction ->
                 transaction.transactionType == TransactionType.DEBIT &&
                     transaction.currency == profile.currency &&
                     transaction.category in variableCategories
             }
             .sumOf { it.amount }
-        val highCostDebt = debtRepository.findAllByStatus(DebtStatus.ACTIVE)
+        val highCostDebt = debtRepository.findAllByUserIdAndStatus(currentUser.id(), DebtStatus.ACTIVE)
             .filter { it.priority == DebtPriority.HIGH_COST && it.currency == profile.currency }
             .sumOf { it.outstandingAmount }
 
@@ -151,7 +153,7 @@ class FinancialPlanService(
         if (!consentService.hasActiveConsent()) {
             warnings += "Não há consentimento Open Finance ativo; os dados podem estar desatualizados"
         }
-        val ignoredAccounts = accountRepository.findAll().count { it.currency != profile.currency }
+        val ignoredAccounts = accountRepository.findAllByUserId(currentUser.id()).count { it.currency != profile.currency }
         if (ignoredAccounts > 0) {
             val accountLabel = if (ignoredAccounts == 1) "conta foi excluída" else "contas foram excluídas"
             warnings += "$ignoredAccounts $accountLabel do cálculo porque usa outra moeda"
@@ -162,6 +164,7 @@ class FinancialPlanService(
         val now = OffsetDateTime.now(clock)
         val plan = planRepository.save(
             FinancialPlanEntity(
+                userId = currentUser.id(),
                 asOf = asOf,
                 nextIncomeDate = calculated.nextIncomeDate,
                 currency = profile.currency,
@@ -194,11 +197,11 @@ class FinancialPlanService(
     /** Retorna o plano mais recente ou `null` quando ainda não houve cálculo. */
     @Transactional
     fun latest(): FinancialPlanResponse? {
-        val plan = planRepository.findFirstByOrderByGeneratedAtDesc()
+        val plan = planRepository.findFirstByUserIdOrderByGeneratedAtDesc(currentUser.id())
             ?: return null
         val profile = profileService.getRequired()
         val currency = Currency.getInstance(plan.currency)
-        val accounts = accountRepository.findAllByCurrency(plan.currency)
+        val accounts = accountRepository.findAllByUserIdAndCurrency(currentUser.id(), plan.currency)
         val total = accounts.sumOf { it.availableBalance }
         val reserve = accounts.filter { it.purpose == AccountPurpose.EMERGENCY_RESERVE }
             .sumOf { it.availableBalance }
@@ -208,15 +211,15 @@ class FinancialPlanService(
             reserveBalance = reserve,
             emergencyTarget = target,
             allocations = decodeAllocations(plan.allocationPlan, currency),
-            actions = actionRepository.findAllByPlanId(plan.id),
+            actions = actionRepository.findAllByPlanIdAndPlanUserId(plan.id, currentUser.id()),
         )
     }
 
     /** Registra a decisão do usuário sem executar movimentações financeiras. */
     @Transactional
     fun reviewAction(id: UUID, approve: Boolean): ActionIntentResponse {
-        val action = actionRepository.findById(id)
-            .orElseThrow { ResourceNotFoundException("Intenção de ação não encontrada") }
+        val action = actionRepository.findByIdAndPlanUserId(id, currentUser.id())
+            ?: throw ResourceNotFoundException("Intenção de ação não encontrada")
         if (action.status != ActionIntentStatus.PROPOSED) {
             throw BusinessRuleException("A intenção já foi revisada", "ACTION_ALREADY_REVIEWED")
         }
