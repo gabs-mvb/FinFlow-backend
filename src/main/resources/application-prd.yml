@@ -1,3 +1,7 @@
 spring:
   config:
     import: optional:file:.env.production[.properties]
+  datasource:
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
