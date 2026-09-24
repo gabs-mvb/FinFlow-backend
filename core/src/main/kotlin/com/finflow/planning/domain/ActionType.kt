@@ -1,6 +1,7 @@
 package com.finflow.planning.domain
 
 enum class ActionType {
+    CUSTOM,
     RESERVE_FOR_OBLIGATIONS,
     REDUCE_VARIABLE_SPENDING,
     PAY_HIGH_COST_DEBT,

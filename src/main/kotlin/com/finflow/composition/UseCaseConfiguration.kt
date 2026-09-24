@@ -4,6 +4,7 @@ import com.finflow.account.application.FinancialAccountService
 import com.finflow.account.application.model.CreateAccountRequest
 import com.finflow.account.application.model.FinancialAccountResponse
 import com.finflow.account.application.model.UpdateAccountBalanceRequest
+import com.finflow.account.application.model.UpdateAccountRequest
 import com.finflow.account.application.port.inbound.FinancialAccountUseCases
 import com.finflow.account.application.port.outbound.FinancialAccountRepository
 import com.finflow.account.domain.FinancialAccount
@@ -33,6 +34,7 @@ import com.finflow.goal.application.port.outbound.GoalRepository
 import com.finflow.obligation.application.ObligationService
 import com.finflow.obligation.application.model.CreateObligationRequest
 import com.finflow.obligation.application.model.ObligationResponse
+import com.finflow.obligation.application.model.UpdateObligationRequest
 import com.finflow.obligation.application.port.inbound.ObligationUseCases
 import com.finflow.obligation.application.port.outbound.ObligationRepository
 import com.finflow.onboarding.application.OnboardingService
@@ -47,9 +49,11 @@ import com.finflow.openfinance.application.port.outbound.OpenFinanceConsentRepos
 import com.finflow.planning.application.FinancialPlanService
 import com.finflow.planning.application.model.ActionIntentResponse
 import com.finflow.planning.application.model.FinancialPlanResponse
+import com.finflow.planning.application.model.UpdateFinancialPlanRequest
 import com.finflow.planning.application.port.inbound.FinancialPlanUseCases
 import com.finflow.planning.application.port.outbound.ActionIntentRepository
 import com.finflow.planning.application.port.outbound.FinancialPlanRepository
+import com.finflow.planning.application.port.outbound.PlanRevisionRepository
 import com.finflow.portfolio.application.PortfolioService
 import com.finflow.portfolio.application.model.ContributionAllocation
 import com.finflow.portfolio.application.model.PortfolioResponse
@@ -106,6 +110,11 @@ class UseCaseConfiguration {
     ): FinancialAccountUseCases {
         val target = FinancialAccountService(currentUser, repository, auditService, clock)
         return object : FinancialAccountUseCases {
+            override fun update(
+                id: UUID,
+                request: UpdateAccountRequest,
+            ): FinancialAccountResponse = inTransaction(transactions) { target.update(id, request) }
+
             override fun create(request: CreateAccountRequest): FinancialAccountResponse =
                 inTransaction(transactions) { target.create(request) }
 
@@ -205,6 +214,11 @@ class UseCaseConfiguration {
     ): ObligationUseCases {
         val target = ObligationService(currentUser, repository, auditService, clock)
         return object : ObligationUseCases {
+            override fun update(
+                id: UUID,
+                request: UpdateObligationRequest,
+            ): ObligationResponse = inTransaction(transactions) { target.update(id, request) }
+
             override fun create(request: CreateObligationRequest): ObligationResponse =
                 inTransaction(transactions) { target.create(request) }
 
@@ -254,6 +268,7 @@ class UseCaseConfiguration {
 
     @Bean
     fun financialPlanService(
+        revisionRepository: PlanRevisionRepository,
         currentUser: CurrentUser,
         profileService: FinancialProfileUseCases,
         accountRepository: FinancialAccountRepository,
@@ -282,8 +297,16 @@ class UseCaseConfiguration {
                 actionRepository,
                 auditService,
                 clock,
+                revisionRepository,
             )
         return object : FinancialPlanUseCases {
+            override fun preview(asOf: LocalDate): FinancialPlanResponse = inTransaction(transactions) { target.preview(asOf) }
+
+            override fun update(
+                id: UUID,
+                request: UpdateFinancialPlanRequest,
+            ): FinancialPlanResponse = inTransaction(transactions) { target.update(id, request) }
+
             override fun generate(asOf: LocalDate): FinancialPlanResponse = inTransaction(transactions) { target.generate(asOf) }
 
             override fun latest(): FinancialPlanResponse? = inTransaction(transactions) { target.latest() }

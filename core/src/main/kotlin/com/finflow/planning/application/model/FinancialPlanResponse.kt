@@ -1,5 +1,7 @@
 package com.finflow.planning.application.model
 
+import com.finflow.planning.domain.PlanContent
+import com.finflow.planning.domain.PlanDetails
 import com.finflow.portfolio.application.model.ContributionAllocation
 import com.finflow.shared.application.model.MoneyOutput
 import java.time.LocalDate
@@ -27,4 +29,8 @@ data class FinancialPlanResponse(
     val actions: List<ActionIntentResponse>,
     val warnings: List<String>,
     val generatedAt: OffsetDateTime,
+    val revision: Int = 0,
+    val updatedAt: OffsetDateTime? = null,
+    val details: PlanDetails = PlanDetails(),
+    val content: PlanContent? = null,
 )
