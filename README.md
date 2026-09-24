@@ -14,7 +14,8 @@ O MVP registra consentimentos e recebe dados financeiros em um formato único. A
 - plano financeiro com déficit projetado, saldo livre real, limite diário e intenções auditáveis;
 - relatório mensal com fluxo de caixa, taxa de poupança e prioridades;
 - registro de consentimentos Open Finance e consulta do estado da integração;
-- autenticação por API key, validação, erros RFC 9457 (`application/problem+json`), auditoria e migrations Flyway.
+- autenticação JWT, validação, erros RFC 9457 (`application/problem+json`), auditoria e migrations Flyway;
+- arquitetura hexagonal com núcleo Kotlin independente de frameworks e adaptadores HTTP, JPA e segurança.
 
 ## Stack
 
@@ -23,17 +24,19 @@ O MVP registra consentimentos e recebe dados financeiros em um formato único. A
 - Gradle Wrapper 9.5.1
 - JUnit 5 e H2 em modo PostgreSQL nos testes
 
+O módulo Gradle `core` contém domínio, casos de uso e portas. O projeto principal contém os adaptadores e a composição Spring. Veja [a estrutura e as regras de dependência](docs/ARCHITECTURE.md#arquitetura-hexagonal).
+
 ## Executar localmente
 
 Pré-requisitos: Java 17+ e Docker.
 
 ```powershell
 docker compose up -d
-$env:FINFLOW_API_KEY = "troque-por-um-segredo-forte"
+$env:JWT_SECRET = "troque-por-um-segredo-aleatorio-de-pelo-menos-32-bytes"
 .\gradlew.bat bootRun
 ```
 
-A API ficará disponível em `http://localhost:8080`. Envie `X-API-Key` em todas as rotas de negócio. Apenas `/actuator/health` e `/actuator/info` são públicas.
+A API ficará disponível em `http://localhost:8080`. Registre o usuário em `POST /api/auth/register`, autentique em `POST /api/auth/login` e envie `Authorization: Bearer <token>` nas rotas de negócio. As rotas de registro, login, `/actuator/health` e `/actuator/info` são públicas.
 
 Para testar e gerar o artefato:
 
@@ -57,7 +60,7 @@ As variáveis disponíveis estão em `.env.example`. O Compose sobe somente o Po
 Exemplo de perfil:
 
 ```powershell
-$headers = @{ "X-API-Key" = "troque-por-um-segredo-forte" }
+$headers = @{ "Authorization" = "Bearer <token-retornado-pelo-login>" }
 $body = @{
   monthlyIncome = @{ amount = 7600.00; currency = "BRL" }
   payDay = 5
@@ -95,5 +98,5 @@ As regras de cálculo e os limites de segurança estão em [`docs/ARCHITECTURE.m
 
 - `OPEN_FINANCE_PROVIDER=disabled` é o padrão. Uma instituição participante ou agregador autorizado ainda precisa implementar a troca de consentimento e a sincronização real.
 - O modo `AUTOPILOT` não concede permissões adicionais. Uma futura execução bancária ainda terá de validar política, limites, consentimento, idempotência e auditoria.
-- A API é de usuário único nesta fase. Antes de exposição pública, substitua a API key por autenticação forte, isolamento por usuário e gestão de segredos.
+- As consultas de negócio são isoladas pelo usuário autenticado. Configure o segredo JWT e a gestão de segredos no ambiente de implantação.
 - As recomendações são regras de planejamento, não garantia de rentabilidade nem oferta de produto financeiro.

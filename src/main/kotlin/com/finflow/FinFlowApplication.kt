@@ -1,5 +1,6 @@
 package com.finflow
 
+import com.finflow.FinFlowApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
@@ -7,5 +8,5 @@ import org.springframework.boot.runApplication
 class FinFlowApplication
 
 fun main(args: Array<String>) {
-	runApplication<FinFlowApplication>(*args)
+    runApplication<FinFlowApplication>(*args)
 }

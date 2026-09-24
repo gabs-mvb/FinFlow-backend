@@ -12,7 +12,57 @@ dados canônicos -> consolidação -> motor determinístico -> intenção -> apr
 
 Uma futura camada de IA poderá explicar cenários e sugerir intenções, sem acesso direto às APIs bancárias. A chamada a um conector regulado ficará a cargo de um orquestrador determinístico, depois de validar consentimento, política, limite, risco, idempotência e auditoria.
 
-## Modular monolith
+## Arquitetura hexagonal
+
+O backend continua sendo um monólito modular, com dois módulos Gradle e dependências apontando para o núcleo:
+
+```text
+HTTP / Spring Security
+        |
+        v
+portas de entrada -> casos de uso -> domínio
+                         |
+                         v
+                  portas de saída
+                         ^
+                         |
+                adaptadores JPA / segurança
+```
+
+- `core/src/main/kotlin/com/finflow/<funcionalidade>/domain`: modelos imutáveis, enums e regras de domínio. Depende apenas de Kotlin/JDK e outros tipos de domínio.
+- `core/.../<funcionalidade>/application`: casos de uso Kotlin comuns, sem anotações Spring, JPA ou Jakarta Validation.
+- `core/.../application/model`: comandos e resultados independentes de HTTP. Os comandos validam seus próprios limites, inclusive quando chamados sem um controller.
+- `core/.../application/port/inbound`: interfaces consumidas pelos controllers e pelos casos de uso de outros módulos.
+- `core/.../application/port/outbound`: contratos de persistência, identidade autenticada, hash de senha e autenticação de credenciais.
+- `src/main/kotlin/com/finflow/<funcionalidade>/adapter/inbound`: controllers, DTOs HTTP com validação Jakarta e filtros JWT.
+- `src/.../adapter/outbound`: entidades e repositórios Spring Data, mapeadores explícitos e implementações de segurança.
+- `src/.../composition`: configuração Spring e composição dos casos de uso com suas dependências.
+
+O projeto principal depende de `:core`. O módulo `:core` não tem Spring, Hibernate, Jakarta, Jackson ou JWT em seu classpath de produção; um import desses frameworks no núcleo quebra a compilação. Os testes de arquitetura também impedem dependências de domínio para aplicação e de controllers para implementações de serviços ou persistência.
+
+As entidades JPA são distintas dos modelos de domínio. Os adaptadores convertem os dois sentidos, inclusive relações de conta/transação e plano/intenção. A codificação de escopos, avisos e alocações em colunas textuais pertence à persistência. Os nomes de tabelas, colunas e migrations existentes foram mantidos.
+
+### Transações e composição
+
+`UseCaseConfiguration` instancia os serviços puros e expõe as portas de entrada envolvidas por `TransactionTemplate`, com propagação `REQUIRED`. As chamadas entre casos de uso compartilham a mesma transação: conta e auditoria, importação e idempotência, plano e intenções, perfil e conclusão do onboarding. Nenhum controller instancia serviços diretamente.
+
+O bloqueio pessimista de onboarding está em `UserRepository.lockById`, implementado pelo adaptador JPA. A identidade vem de `CurrentUser`, cuja implementação consulta o contexto autenticado do Spring Security; o núcleo não lê esse contexto nem recebe um `userId` informado pelo cliente.
+
+`Clock` é injetado nos casos de uso. Como é uma abstração do JDK, pode ser substituído por `Clock.fixed` nos testes sem criar uma interface duplicada.
+
+### Testes e manutenção
+
+```powershell
+.\gradlew.bat :core:test  # domínio e casos de uso com portas em memória, sem Spring
+.\gradlew.bat test        # inclui arquitetura, JPA/H2, HTTP/JWT e rollback
+.\gradlew.bat build       # inclui testes e empacotamento do backend
+```
+
+Os testes HTTP percorrem registro/login, onboarding, contas, importação idempotente, compromissos, metas, carteira, consentimentos, planejamento, aprovação e relatório. Também verificam isolamento entre usuários. Testes de rollback provocam falha na auditoria para verificar a atomicidade de conta e onboarding.
+
+Para adicionar uma funcionalidade: defina os comandos/resultados e portas no núcleo, implemente o caso de uso com dependências de construtor, implemente os adaptadores e registre a ligação em `UseCaseConfiguration`. Regras financeiras ficam no domínio ou no caso de uso, e formatos HTTP/JPA ficam nos adaptadores.
+
+## Módulos funcionais
 
 Cada pacote em `com.finflow` representa um módulo funcional:
 
@@ -23,7 +73,8 @@ Cada pacote em `com.finflow` representa um módulo funcional:
 - `planning`: cálculo puro, persistência do plano e intenções;
 - `openfinance`: registro local de consentimento e status do provedor;
 - `report`: fechamento mensal;
-- `audit`, `shared.security`, `shared.api` e `shared.domain`: capacidades transversais.
+- `authentication` e `onboarding`: autenticação e configuração inicial;
+- `audit` e `shared`: auditoria, identidade, valores monetários e erros.
 
 Todos os módulos são implantados juntos. Um módulo só deve virar serviço separado quando volume, organização da equipe ou exigência regulatória trouxerem uma necessidade concreta.
 
