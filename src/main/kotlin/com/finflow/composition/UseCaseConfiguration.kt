@@ -55,11 +55,9 @@ import com.finflow.planning.application.port.outbound.ActionIntentRepository
 import com.finflow.planning.application.port.outbound.FinancialPlanRepository
 import com.finflow.planning.application.port.outbound.PlanRevisionRepository
 import com.finflow.portfolio.application.PortfolioService
-import com.finflow.portfolio.application.model.ContributionAllocation
 import com.finflow.portfolio.application.model.PortfolioResponse
 import com.finflow.portfolio.application.model.ReplacePortfolioRequest
 import com.finflow.portfolio.application.port.inbound.PortfolioUseCases
-import com.finflow.portfolio.application.port.outbound.AllocationTargetRepository
 import com.finflow.portfolio.application.port.outbound.PortfolioPositionRepository
 import com.finflow.profile.application.FinancialProfileService
 import com.finflow.profile.application.model.FinancialProfileResponse
@@ -71,7 +69,6 @@ import com.finflow.report.application.MonthlyReportService
 import com.finflow.report.application.model.MonthlyFinancialReport
 import com.finflow.report.application.port.inbound.MonthlyReportUseCases
 import com.finflow.shared.application.port.outbound.CurrentUser
-import com.finflow.shared.domain.Money
 import com.finflow.transaction.application.FinancialTransactionService
 import com.finflow.transaction.application.model.FinancialTransactionResponse
 import com.finflow.transaction.application.model.ImportTransactionsRequest
@@ -230,17 +227,23 @@ class UseCaseConfiguration {
 
     @Bean
     fun onboardingService(
+        events: com.finflow.onboarding.application.port.outbound.OnboardingEvents,
         currentUser: CurrentUser,
         profiles: FinancialProfileUseCases,
         users: UserRepository,
         transactions: TransactionTemplate,
     ): OnboardingUseCases {
-        val target = OnboardingService(currentUser, profiles, users)
+        val target = OnboardingService(currentUser, profiles, users, events)
         return object : OnboardingUseCases {
-            override fun status(): OnboardingStatus = inTransaction(transactions) { target.status() }
+            override fun status(): OnboardingStatus =
+                com.finflow.onboarding.adapter.outbound.logging.OnboardingOperationLog.observe("status") {
+                    inTransaction(transactions) { target.status() }
+                }
 
             override fun complete(request: UpsertFinancialProfileRequest): OnboardingStatus =
-                inTransaction(transactions) { target.complete(request) }
+                com.finflow.onboarding.adapter.outbound.logging.OnboardingOperationLog.observe("complete") {
+                    inTransaction(transactions) { target.complete(request) }
+                }
         }
     }
 
@@ -275,7 +278,6 @@ class UseCaseConfiguration {
         transactionRepository: FinancialTransactionRepository,
         obligationRepository: ObligationRepository,
         debtRepository: DebtRepository,
-        portfolioService: PortfolioUseCases,
         consentService: OpenFinanceConsentUseCases,
         planRepository: FinancialPlanRepository,
         actionRepository: ActionIntentRepository,
@@ -291,7 +293,6 @@ class UseCaseConfiguration {
                 transactionRepository,
                 obligationRepository,
                 debtRepository,
-                portfolioService,
                 consentService,
                 planRepository,
                 actionRepository,
@@ -322,20 +323,17 @@ class UseCaseConfiguration {
     fun portfolioService(
         currentUser: CurrentUser,
         positionRepository: PortfolioPositionRepository,
-        targetRepository: AllocationTargetRepository,
         auditService: AuditUseCases,
         clock: Clock,
         transactions: TransactionTemplate,
     ): PortfolioUseCases {
-        val target = PortfolioService(currentUser, positionRepository, targetRepository, auditService, clock)
+        val target = PortfolioService(currentUser, positionRepository, auditService, clock)
         return object : PortfolioUseCases {
             override fun replace(request: ReplacePortfolioRequest): PortfolioResponse =
                 inTransaction(transactions) { target.replace(request) }
 
             override fun get(): PortfolioResponse = inTransaction(transactions) { target.get() }
 
-            override fun allocateContribution(contribution: Money): List<ContributionAllocation> =
-                inTransaction(transactions) { target.allocateContribution(contribution) }
         }
     }
 
