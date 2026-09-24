@@ -3,6 +3,7 @@ package com.finflow.account.application
 import com.finflow.account.application.model.CreateAccountRequest
 import com.finflow.account.application.model.FinancialAccountResponse
 import com.finflow.account.application.model.UpdateAccountBalanceRequest
+import com.finflow.account.application.model.UpdateAccountRequest
 import com.finflow.account.application.port.inbound.FinancialAccountUseCases
 import com.finflow.account.application.port.outbound.FinancialAccountRepository
 import com.finflow.account.domain.FinancialAccount
@@ -52,6 +53,36 @@ class FinancialAccountService(
             )
         auditService.record("ACCOUNT_CREATED", "FINANCIAL_ACCOUNT", account.id)
         return account.toResponse()
+    }
+
+    override fun update(
+        id: UUID,
+        request: UpdateAccountRequest,
+    ): FinancialAccountResponse {
+        val account = getRequired(id)
+        val institution = request.institution.trim()
+        val externalId = request.externalId.trim()
+        val identityChanged = !account.institution.equals(institution, ignoreCase = true) || account.externalId != externalId
+        if (identityChanged && repository.existsByUserIdAndInstitutionIgnoreCaseAndExternalId(currentUser.id(), institution, externalId)) {
+            throw ConflictException("A conta externa já foi cadastrada", "ACCOUNT_ALREADY_EXISTS")
+        }
+        val balance = request.availableBalance.toMoney()
+        require(balance.currency.currencyCode == account.currency) { "A moeda da conta não pode ser alterada" }
+        val saved =
+            repository.save(
+                account.copy(
+                    institution = institution,
+                    externalId = externalId,
+                    name = request.name.trim(),
+                    accountType = request.accountType,
+                    purpose = request.purpose,
+                    availableBalance = balance.amount,
+                    lastSyncedAt = request.lastSyncedAt,
+                    updatedAt = OffsetDateTime.now(clock),
+                ),
+            )
+        auditService.record("ACCOUNT_UPDATED", "FINANCIAL_ACCOUNT", id)
+        return saved.toResponse()
     }
 
     override fun updateBalance(

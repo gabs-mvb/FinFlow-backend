@@ -82,21 +82,25 @@ Invoke-RestMethod -Method Put -Uri http://localhost:8080/api/v1/profile `
 | Módulo | Operações |
 |---|---|
 | Perfil | `PUT/GET /api/v1/profile` |
-| Contas | `POST/GET /api/v1/accounts`, `PATCH /api/v1/accounts/{id}/balance` |
+| Contas | `POST/GET /api/v1/accounts`, `PUT /api/v1/accounts/{id}`, `PATCH /api/v1/accounts/{id}/balance` |
 | Transações | `POST /api/v1/transactions/imports`, `GET /api/v1/transactions` |
-| Obrigações | `POST/GET /api/v1/obligations`, `PATCH /api/v1/obligations/{id}/paid` |
+| Obrigações | `POST/GET /api/v1/obligations`, `PUT /api/v1/obligations/{id}`, `PATCH /api/v1/obligations/{id}/paid` |
 | Dívidas | `POST/GET /api/v1/debts`, `PATCH /api/v1/debts/{id}/paid` |
 | Metas | `POST/GET /api/v1/goals`, `PATCH /api/v1/goals/{id}/progress` |
 | Carteira | `PUT/GET /api/v1/portfolio` |
 | Open Finance | `PUT/GET /api/v1/open-finance/consents`, `GET /api/v1/open-finance/status` |
-| Plano | `POST /api/v1/plans`, `GET /api/v1/plans/latest`, revisão de ações em `/api/v1/plans/actions/{id}` |
+| Plano | `POST /api/v1/plans`, `PUT /api/v1/plans/{id}`, `GET /api/v1/plans/latest`, revisão de ações em `/api/v1/plans/actions/{id}` |
 | Relatório | `GET /api/v1/reports/monthly?year={ano}&month={mês}` |
 
 As regras de cálculo e os limites de segurança estão em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+Os contratos e exemplos de alteração estão em [Atualização por PUT](docs/UPDATES.md).
+
+Para gerar planos personalizados com OpenAI, analisar o histórico de gastos e editar a proposta com controle de revisões, veja [Planos personalizados](docs/PERSONALIZED_PLANS.md). A integração exige `PLANNING_AI_ENABLED=true`, `OPENAI_API_KEY` e `OPENAI_MODEL` no ambiente.
 
 ## Limites do MVP
 
 - `OPEN_FINANCE_PROVIDER=disabled` é o padrão. Uma instituição participante ou agregador autorizado ainda precisa implementar a troca de consentimento e a sincronização real.
 - O modo `AUTOPILOT` não concede permissões adicionais. Uma futura execução bancária ainda terá de validar política, limites, consentimento, idempotência e auditoria.
 - As consultas de negócio são isoladas pelo usuário autenticado. Configure o segredo JWT e a gestão de segredos no ambiente de implantação.
-- As recomendações são regras de planejamento, não garantia de rentabilidade nem oferta de produto financeiro.
+- As recomendações podem vir do motor de regras ou da IA configurada e passam pelas validações financeiras do backend.

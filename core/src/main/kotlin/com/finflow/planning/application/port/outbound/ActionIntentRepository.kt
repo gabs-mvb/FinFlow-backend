@@ -8,6 +8,11 @@ interface ActionIntentRepository {
 
     fun saveAll(values: List<ActionIntent>): List<ActionIntent>
 
+    fun deleteByIdAndPlanUserId(
+        id: UUID,
+        userId: Int,
+    )
+
     fun findAllByPlanIdAndPlanUserId(
         planId: UUID,
         userId: Int,

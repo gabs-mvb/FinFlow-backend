@@ -3,6 +3,7 @@ package com.finflow.account
 import com.finflow.account.application.FinancialAccountService
 import com.finflow.account.application.model.CreateAccountRequest
 import com.finflow.account.application.model.UpdateAccountBalanceRequest
+import com.finflow.account.application.model.UpdateAccountRequest
 import com.finflow.account.application.port.outbound.FinancialAccountRepository
 import com.finflow.account.domain.AccountPurpose
 import com.finflow.account.domain.AccountType
@@ -91,6 +92,30 @@ class FinancialAccountUseCasesTest {
             service.updateBalance(created.id, UpdateAccountBalanceRequest(MoneyInput(BigDecimal("10.00"), "USD")))
         }
         assertEquals(BigDecimal("100.00"), repository.values.getValue(created.id).availableBalance)
+    }
+
+    @Test
+    fun `full update preserves ownership and creation time and rejects another accounts identity`() {
+        val first = service.create(request())
+        service.create(request().copy(externalId = "external-2"))
+        val previous = repository.values.getValue(first.id)
+        val update =
+            UpdateAccountRequest(
+                "bank",
+                "external-1",
+                " Savings ",
+                AccountType.SAVINGS,
+                AccountPurpose.GOAL,
+                MoneyInput(BigDecimal("50.00")),
+            )
+        val changed = service.update(first.id, update)
+        assertEquals("Savings", changed.name)
+        assertEquals(previous.createdAt, repository.values.getValue(first.id).createdAt)
+        assertEquals(previous.userId, repository.values.getValue(first.id).userId)
+        assertEquals("Main", previous.name)
+        assertFailsWith<ConflictException> { service.update(first.id, update.copy(externalId = "external-2")) }
+        assertEquals("external-1", repository.values.getValue(first.id).externalId)
+        assertEquals(listOf("ACCOUNT_CREATED", "ACCOUNT_CREATED", "ACCOUNT_UPDATED"), events)
     }
 
     private fun request() =

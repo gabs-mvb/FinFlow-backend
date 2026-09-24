@@ -24,4 +24,10 @@ data class FinancialPlan(
     val warnings: List<String> = emptyList(),
     val allocations: List<PlannedAllocation> = emptyList(),
     val generatedAt: OffsetDateTime = OffsetDateTime.now(),
+    val updatedAt: OffsetDateTime? = null,
+    val revision: Int = 0,
+    val details: PlanDetails = PlanDetails(),
+    val totalBalanceSnapshot: BigDecimal? = null,
+    val reserveBalanceSnapshot: BigDecimal? = null,
+    val reserveTargetSnapshot: BigDecimal? = null,
 )
