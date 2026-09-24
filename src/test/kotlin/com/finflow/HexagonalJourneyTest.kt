@@ -86,11 +86,14 @@ class HexagonalJourneyTest
             )}"}"""
             call("PUT", "/api/v1/open-finance/consents", token, consent)
             assertEquals(2, call("GET", "/api/v1/open-finance/consents", token)[0]["scopes"].size())
-            val portfolio = """{"positions":[{"assetCode":"CDB","assetName":"Fixed","assetClass":"FIXED_INCOME","currentValue":{"amount":1000.00}}],"targets":[{"assetClass":"FIXED_INCOME","targetPercentage":100.0,"minimumPercentage":90.0,"maximumPercentage":100.0}]}"""
+            val portfolio = """{"positions":[{"assetCode":"CDB","assetName":"Fixed","assetClass":"FIXED_INCOME","currentValue":{"amount":1000.00}}]}"""
             call("PUT", "/api/v1/portfolio", token, portfolio)
             call("PUT", "/api/v1/portfolio", token, portfolio)
             assertEquals(1, call("GET", "/api/v1/portfolio", token)["positions"].size())
+            assertFalse(call("GET", "/api/v1/portfolio", token).has("targets"))
             val plan = call("POST", "/api/v1/plans?asOf=2026-09-23", token)
+            assertEquals(12000, plan["operatingBalance"]["amount"].asInt())
+            assertEquals(12000, plan["totalConsolidatedBalance"]["amount"].asInt())
             assertEquals(plan["id"], call("GET", "/api/v1/plans/latest", token)["id"])
             val action = plan["actions"].first { it["requiresApproval"].asBoolean() }
             val actionPath = "/api/v1/plans/actions/${action["id"].asString()}/approve"

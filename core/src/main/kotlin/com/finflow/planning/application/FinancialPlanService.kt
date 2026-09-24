@@ -24,14 +24,12 @@ import com.finflow.planning.domain.FinancialPlan
 import com.finflow.planning.domain.FinancialPlanner
 import com.finflow.planning.domain.PlanActionDraft
 import com.finflow.planning.domain.PlanContent
-import com.finflow.planning.domain.PlanSource
 import com.finflow.planning.domain.PlanSource.RULE_BASED
 import com.finflow.planning.domain.PlannedAllocation
 import com.finflow.planning.domain.PlannerInput
 import com.finflow.planning.domain.PlannerResult
 import com.finflow.planning.domain.RiskLevel
 import com.finflow.portfolio.application.model.ContributionAllocation
-import com.finflow.portfolio.application.port.inbound.PortfolioUseCases
 import com.finflow.portfolio.domain.AssetClass
 import com.finflow.profile.application.port.inbound.FinancialProfileUseCases
 import com.finflow.shared.application.model.toOutput
@@ -57,7 +55,6 @@ class FinancialPlanService(
     private val transactionRepository: FinancialTransactionRepository,
     private val obligationRepository: ObligationRepository,
     private val debtRepository: DebtRepository,
-    private val portfolioService: PortfolioUseCases,
     private val consentService: OpenFinanceConsentUseCases,
     private val planRepository: FinancialPlanRepository,
     private val actionRepository: ActionIntentRepository,
@@ -196,8 +193,7 @@ class FinancialPlanService(
                     highCostDebtOutstanding = highCostDebt,
                 ),
             )
-        val investmentMoney = Money(calculated.investmentContribution, currency)
-        val allocations = portfolioService.allocateContribution(investmentMoney)
+        val allocations = emptyList<ContributionAllocation>()
         val warnings = calculated.warnings.toMutableList()
         if (!consentService.hasActiveConsent()) {
             warnings += "Não há consentimento Open Finance ativo; os dados podem estar desatualizados"
@@ -206,9 +202,6 @@ class FinancialPlanService(
         if (ignoredAccounts > 0) {
             val accountLabel = if (ignoredAccounts == 1) "conta foi excluída" else "contas foram excluídas"
             warnings += "$ignoredAccounts $accountLabel do cálculo porque usa outra moeda"
-        }
-        if (calculated.investmentContribution > BigDecimal.ZERO && allocations.isEmpty()) {
-            warnings += "Aporte calculado sem alocação: configure as metas da carteira"
         }
         val now = OffsetDateTime.now(clock)
         val plan =
@@ -295,11 +288,7 @@ class FinancialPlanService(
                     ContributionAllocation(
                         it.assetClass,
                         Money(it.amount, currency).toOutput(),
-                        if (plan.details.source == PlanSource.RULE_BASED) {
-                            "Classe abaixo da alocação-alvo; aporte direcionado sem vender posições"
-                        } else {
-                            "Alocação proposta no plano"
-                        },
+                        "Alocação proposta no plano",
                     )
                 },
             actions = actionRepository.findAllByPlanIdAndPlanUserId(plan.id, currentUser.id()),
