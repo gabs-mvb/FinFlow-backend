@@ -102,3 +102,22 @@ O PUT antigo `/{id}` com apenas `asOf` continua disponível para planos por regr
 O teste do adaptador usa um servidor HTTP local; os testes de integração simulam a proposta da IA. Uma verificação real requer chave e modelo disponíveis no ambiente.
 
 Referências oficiais: [Responses API](https://developers.openai.com/api/docs/guides/migrate-to-responses) e [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs).
+
+## Diagnóstico da integração
+
+O backend mantém HTTP 503 para falhas dessa dependência, mas retorna códigos específicos:
+
+| Código | Verificação necessária |
+|---|---|
+| `AI_AUTHENTICATION_FAILED` | Chave inválida, expirada ou revogada no processo do backend |
+| `AI_MODEL_UNAVAILABLE` | Nome do modelo e acesso do projeto |
+| `AI_ACCESS_DENIED` | Permissões da chave/projeto |
+| `AI_QUOTA_EXCEEDED` | Créditos ou limites de uso da API; repetir a chamada não resolve |
+| `AI_RATE_LIMITED` | Limite temporário de chamadas; aguarde |
+| `AI_REQUEST_REJECTED` | Compatibilidade do modelo com Responses/Structured Outputs e contrato enviado |
+| `AI_TIMEOUT` | Tempo de resposta do provedor |
+| `AI_CONNECTION_ERROR` | Rede, DNS, proxy ou certificados do servidor |
+
+Quando a OpenAI responde, `providerStatus` informa o status HTTP original e `providerRequestId`, quando disponível, permite correlacionar a requisição no provedor. Os logs `event=planning.ai.failed` registram esses mesmos metadados, sem a chave, o contexto financeiro ou mensagens brutas da OpenAI. O frontend apresenta o detalhe específico devolvido pelo backend.
+
+Espaços externos e aspas externas pareadas nos valores de chave/modelo são normalizados pelo adaptador. Alterações nas variáveis exigem reiniciar o backend. Não há fallback automático que disfarce falhas de configuração ou cobrança.

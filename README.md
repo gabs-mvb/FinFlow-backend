@@ -98,6 +98,8 @@ Os contratos e exemplos de alteração estão em [Atualização por PUT](docs/UP
 
 Para gerar planos personalizados com OpenAI, analisar o histórico de gastos e editar a proposta com controle de revisões, veja [Planos personalizados](docs/PERSONALIZED_PLANS.md). A integração exige `PLANNING_AI_ENABLED=true`, `OPENAI_API_KEY` e `OPENAI_MODEL` no ambiente.
 
+Para os builds de PR e a publicação automática da imagem a cada atualização da `main`, veja [Publicação e deploy](docs/DEPLOYMENT.md).
+
 ## Limites do MVP
 
 - `OPEN_FINANCE_PROVIDER=disabled` é o padrão. Uma instituição participante ou agregador autorizado ainda precisa implementar a troca de consentimento e a sincronização real.

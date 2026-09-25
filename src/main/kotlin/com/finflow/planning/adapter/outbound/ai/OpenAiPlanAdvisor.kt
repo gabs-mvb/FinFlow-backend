@@ -9,27 +9,34 @@ import com.finflow.planning.domain.RiskLevel
 import com.finflow.portfolio.domain.AssetClass
 import com.finflow.shared.domain.AiPlanningException
 import com.finflow.transaction.domain.TransactionCategory
+import org.slf4j.LoggerFactory
 import tools.jackson.databind.ObjectMapper
+import java.io.IOException
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.net.http.HttpTimeoutException
 import java.time.Duration
 
 class OpenAiPlanAdvisor(
     private val json: ObjectMapper,
-    private val apiKey: String,
-    private val model: String,
+    apiKey: String,
+    model: String,
     private val enabled: Boolean,
     private val timeout: Duration = Duration.ofSeconds(60),
     private val endpoint: URI = URI.create("https://api.openai.com/v1/responses"),
     private val client: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build(),
 ) : PlanAdvisor {
+    private val apiKey = cleanSetting(apiKey)
+    private val model = cleanSetting(model)
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     override fun suggest(
         evidence: PlanningEvidence,
         preferences: String,
     ): PlanProposal {
-        if (!enabled || apiKey.isBlank() || model.isBlank()) {
+        if (!enabled || apiKey.isBlank() || model.isBlank() || apiKey.any { it.isWhitespace() } || model.any { it.isWhitespace() }) {
             throw AiPlanningException(
                 "Configure PLANNING_AI_ENABLED, OPENAI_API_KEY e OPENAI_MODEL para gerar o plano personalizado",
                 "AI_NOT_CONFIGURED",
@@ -65,8 +72,11 @@ class OpenAiPlanAdvisor(
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build()
             val response = client.send(request, HttpResponse.BodyHandlers.ofString())
-            if (response.statusCode() !in 200..299 || response.body().length > 1_000_000) {
-                throw AiPlanningException("O provedor de IA não conseguiu gerar o plano. Tente novamente.")
+            if (response.statusCode() !in 200..299) {
+                throw providerFailure(response)
+            }
+            if (response.body().length > 1_000_000) {
+                throw AiPlanningException("A resposta da IA excedeu o limite permitido", "AI_PLAN_INVALID")
             }
             val root = json.readTree(response.body())
             if (root.path("status").asString() !=
@@ -82,7 +92,22 @@ class OpenAiPlanAdvisor(
             if (texts.size != 1) throw AiPlanningException("Resposta de IA inválida", "AI_PLAN_INVALID")
             return PlanProposal(json.readValue(texts.single().path("text").asString(), PlanContent::class.java), model, PROMPT_VERSION)
         } catch (error: AiPlanningException) {
+            logger.warn(
+                "event=planning.ai.failed code={} providerStatus={} providerRequestId={}",
+                error.code,
+                error.providerStatus,
+                error.providerRequestId,
+            )
             throw error
+        } catch (_: HttpTimeoutException) {
+            logger.warn("event=planning.ai.failed code=AI_TIMEOUT")
+            throw AiPlanningException("A OpenAI não respondeu dentro do tempo configurado. Tente novamente.", "AI_TIMEOUT")
+        } catch (_: IOException) {
+            logger.warn("event=planning.ai.failed code=AI_CONNECTION_ERROR")
+            throw AiPlanningException(
+                "Não foi possível conectar à OpenAI. Verifique rede, DNS, proxy e certificados do servidor.",
+                "AI_CONNECTION_ERROR",
+            )
         } catch (_: InterruptedException) {
             Thread.currentThread().interrupt()
             throw AiPlanningException("A geração do plano foi interrompida")
@@ -92,7 +117,68 @@ class OpenAiPlanAdvisor(
         }
     }
 
+    private fun providerFailure(response: HttpResponse<String>): AiPlanningException {
+        val error =
+            if (response.body().length <=
+                1_000_000
+            ) {
+                runCatching { json.readTree(response.body()).path("error") }.getOrNull()
+            } else {
+                null
+            }
+        val code = error?.path("code")?.asString()
+        val type = error?.path("type")?.asString()
+        val status = response.statusCode()
+        val requestId =
+            response
+                .headers()
+                .firstValue("x-request-id")
+                .orElse(null)
+                ?.takeIf { it.matches(Regex("[a-zA-Z0-9_-]{1,128}")) }
+        val (publicCode, message) =
+            when {
+                status == 401 ->
+                    "AI_AUTHENTICATION_FAILED" to
+                        "A OpenAI recusou a chave configurada no backend. Verifique OPENAI_API_KEY e reinicie a aplicação."
+                code == "model_not_found" || status == 404 ->
+                    "AI_MODEL_UNAVAILABLE" to
+                        "O modelo configurado não existe ou este projeto não tem acesso a ele. Verifique OPENAI_MODEL."
+                status == 403 ->
+                    "AI_ACCESS_DENIED" to
+                        "O projeto ou a chave não tem permissão para utilizar a OpenAI. Verifique as permissões no provedor."
+                type == "insufficient_quota" ||
+                    code in
+                    setOf(
+                        "insufficient_quota",
+                        "billing_hard_limit_reached",
+                        "organization_spend_limit_exceeded",
+                        "project_spend_limit_exceeded",
+                        "organization_usage_limit_exceeded",
+                    ) ->
+                    "AI_QUOTA_EXCEEDED" to
+                        "O projeto da OpenAI está sem crédito ou atingiu um limite de uso. Verifique o faturamento e os limites da API."
+                status == 429 ->
+                    "AI_RATE_LIMITED" to
+                        "O limite temporário de requisições da OpenAI foi atingido. Aguarde antes de tentar novamente."
+                status == 400 || status == 422 ->
+                    "AI_REQUEST_REJECTED" to
+                        "A OpenAI rejeitou a requisição. Verifique se o modelo configurado suporta Responses API e Structured Outputs."
+                else -> "AI_UNAVAILABLE" to "A OpenAI está temporariamente indisponível. Tente novamente mais tarde."
+            }
+        // Never propagate provider messages: authentication errors may echo the secret key.
+        return AiPlanningException(message, publicCode, status, requestId)
+    }
+
     companion object {
+        private fun cleanSetting(value: String): String {
+            val trimmed = value.trim()
+            return when {
+                trimmed.length >= 2 && trimmed.first() == '"' && trimmed.last() == '"' -> trimmed.substring(1, trimmed.length - 1).trim()
+                trimmed.length >= 2 && trimmed.first() == '\'' && trimmed.last() == '\'' -> trimmed.substring(1, trimmed.length - 1).trim()
+                else -> trimmed
+            }
+        }
+
         const val PROMPT_VERSION = "finflow-personal-planner-v1"
 
         private val instructions =

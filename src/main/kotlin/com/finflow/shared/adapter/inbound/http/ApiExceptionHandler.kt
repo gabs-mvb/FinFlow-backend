@@ -1,5 +1,6 @@
 package com.finflow.shared.adapter.inbound.http
 
+import com.finflow.shared.domain.AiPlanningException
 import com.finflow.shared.domain.ApiException
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
@@ -23,7 +24,18 @@ class ApiExceptionHandler {
     fun handleApiException(
         exception: ApiException,
         request: HttpServletRequest,
-    ): ResponseEntity<ProblemDetail> = problem(HttpStatus.valueOf(exception.reason.name), exception.code, exception.message, request)
+    ): ResponseEntity<ProblemDetail> {
+        val metadata =
+            if (exception is AiPlanningException) {
+                buildMap<String, Any> {
+                    exception.providerStatus?.let { put("providerStatus", it) }
+                    exception.providerRequestId?.let { put("providerRequestId", it) }
+                }
+            } else {
+                emptyMap()
+            }
+        return problem(HttpStatus.valueOf(exception.reason.name), exception.code, exception.message, request, metadata)
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidation(

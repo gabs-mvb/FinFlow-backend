@@ -93,7 +93,14 @@ class OpenAiPlanAdvisorTest {
         }
         server.start()
         try {
-            val result = adapter(server).suggest(evidence, "Reserva primeiro")
+            val result =
+                OpenAiPlanAdvisor(
+                    json,
+                    " \"test-key\" ",
+                    " 'test-model' ",
+                    true,
+                    endpoint = URI.create("http://127.0.0.1:${server.address.port}/responses"),
+                ).suggest(evidence, "Reserva primeiro")
             assertEquals(content, result.content)
             val body = json.readTree(requestBody)
             assertEquals("Bearer test-key", authorization)
@@ -138,6 +145,44 @@ class OpenAiPlanAdvisorTest {
     }
 
     @Test
+    fun `provider errors distinguish credentials model quota rate limit and rejected requests`() {
+        val cases =
+            listOf(
+                Triple(401, "invalid_api_key", "AI_AUTHENTICATION_FAILED"),
+                Triple(403, "permission_denied", "AI_ACCESS_DENIED"),
+                Triple(404, "model_not_found", "AI_MODEL_UNAVAILABLE"),
+                Triple(429, "insufficient_quota", "AI_QUOTA_EXCEEDED"),
+                Triple(429, "project_spend_limit_exceeded", "AI_QUOTA_EXCEEDED"),
+                Triple(429, "rate_limit_exceeded", "AI_RATE_LIMITED"),
+                Triple(400, "invalid_json_schema", "AI_REQUEST_REJECTED"),
+                Triple(503, "server_is_overloaded", "AI_UNAVAILABLE"),
+            )
+        for ((status, providerCode, expectedCode) in cases) {
+            val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+            server.createContext("/responses") { exchange ->
+                exchange.requestBody.close()
+                val body =
+                    json.writeValueAsBytes(
+                        mapOf("error" to mapOf("code" to providerCode, "message" to "SECRET key and customer data")),
+                    )
+                exchange.responseHeaders.add("x-request-id", "req_test123")
+                exchange.sendResponseHeaders(status, body.size.toLong())
+                exchange.responseBody.use { it.write(body) }
+            }
+            server.start()
+            try {
+                val error = assertFailsWith<AiPlanningException> { adapter(server).suggest(evidence, "") }
+                assertEquals(expectedCode, error.code)
+                assertEquals(status, error.providerStatus)
+                assertEquals("req_test123", error.providerRequestId)
+                assertFalse(error.message.contains("SECRET"))
+            } finally {
+                server.stop(0)
+            }
+        }
+    }
+
+    @Test
     fun `request times out`() {
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/responses") { exchange ->
@@ -146,7 +191,8 @@ class OpenAiPlanAdvisorTest {
         }
         server.start()
         try {
-            assertFailsWith<AiPlanningException> { adapter(server, Duration.ofMillis(30)).suggest(evidence, "") }
+            val error = assertFailsWith<AiPlanningException> { adapter(server, Duration.ofMillis(30)).suggest(evidence, "") }
+            assertEquals("AI_TIMEOUT", error.code)
         } finally {
             server.stop(0)
         }
