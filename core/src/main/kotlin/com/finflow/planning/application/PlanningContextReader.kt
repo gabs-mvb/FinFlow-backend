@@ -118,10 +118,12 @@ class PlanningContextReader(
                     .sortedWith(compareBy({ it.priority }, { it.targetDate }, { it.targetAmount }, { it.currentAmount })),
                 obligations
                     .findAllByUserId(owner)
-                    .filter {
-                        it.currency == profile.currency && it.status == ObligationStatus.PENDING && it.dueDate < asOf.plusDays(367)
-                    }.map { PlanningObligation(it.obligationType.name, it.amount, it.dueDate) }
-                    .sortedWith(compareBy({ it.dueDate }, { it.type }, { it.amount })),
+                    .filter { it.currency == profile.currency && it.status == ObligationStatus.PENDING }
+                    .flatMap { obligation ->
+                        obligation.occurrencesUntil(asOf.plusDays(367)).map { dueDate ->
+                            PlanningObligation(obligation.obligationType.name, obligation.amount, dueDate)
+                        }
+                    }.sortedWith(compareBy({ it.dueDate }, { it.type }, { it.amount })),
                 portfolio
                     .get()
                     .positions

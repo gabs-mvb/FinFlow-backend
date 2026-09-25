@@ -14,8 +14,10 @@ data class UpdateObligationRequestBody(
     @field:NotBlank @field:Size(max = 160) val name: String,
     val type: ObligationType,
     @field:Valid val amount: MoneyInputBody,
-    val dueDate: LocalDate,
+    val dueDate: LocalDate? = null,
     val status: ObligationStatus,
+    val recurring: Boolean = false,
+    val dueDay: Int? = null,
 )
 
 fun UpdateObligationRequestBody.toCommand(): UpdateObligationRequest =
@@ -25,4 +27,6 @@ fun UpdateObligationRequestBody.toCommand(): UpdateObligationRequest =
         amount.toCommand(),
         dueDate,
         status,
+        recurring,
+        dueDay,
     )

@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.reque
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.ObjectMapper
+import java.time.LocalDate
+import java.time.YearMonth
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -113,6 +115,37 @@ class UpdateEndpointsTest
             call("PUT", "/api/v1/obligations/$id", body.replace("PAID", "UNKNOWN"), 400)
             assertEquals("Energy", obligations.findByIdAndUserId(id, userId)!!.name)
             assertEquals(2, auditCount("OBLIGATION_UPDATED", id))
+        }
+
+        @Test
+        fun `recurring obligation persists day advances after payment and appears in future plans`() {
+            call("PUT", "/api/v1/profile", profileBody)
+            call("POST", "/api/v1/accounts", accountBody(UUID.randomUUID().toString()), 201)
+            val created =
+                call(
+                    "POST",
+                    "/api/v1/obligations",
+                    """{"name":"Rent","type":"HOUSING","amount":{"amount":1000.00},"recurring":true,"dueDay":31}""",
+                    201,
+                )
+            val id = UUID.fromString(created["id"].asString())
+            val first = LocalDate.parse(created["dueDate"].asString())
+            assertEquals(31, created["dueDay"].asInt())
+            assertTrue(created["recurring"].asBoolean())
+            assertEquals(31.coerceAtMost(YearMonth.from(first).lengthOfMonth()), first.dayOfMonth)
+            val paid = call("PATCH", "/api/v1/obligations/$id/paid")
+            val next = YearMonth.from(first).plusMonths(1).atDay(31.coerceAtMost(YearMonth.from(first).plusMonths(1).lengthOfMonth()))
+            assertEquals(next.toString(), paid["dueDate"].asString())
+            assertEquals("PENDING", paid["status"].asString())
+            assertEquals(next, obligations.findByIdAndUserId(id, userId)!!.dueDate)
+            val plan = call("POST", "/api/v1/plans?asOf=${next.minusDays(1)}")
+            assertEquals(1000, plan["committedObligations"]["amount"].asInt())
+            call(
+                "POST",
+                "/api/v1/obligations",
+                """{"name":"Invalid","type":"HOUSING","amount":{"amount":1000.00},"recurring":true,"dueDay":32}""",
+                400,
+            )
         }
 
         @Test

@@ -32,6 +32,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.transaction.support.TransactionTemplate
 import tools.jackson.databind.ObjectMapper
+import java.net.URI
 import java.time.Clock
 import java.time.Duration
 import java.time.LocalDate
@@ -46,9 +47,10 @@ class PersonalizedPlanningConfiguration {
         @Value("\${finflow.planning.ai.model:}") model: String,
         @Value("\${finflow.planning.ai.enabled:false}") enabled: Boolean,
         @Value("\${finflow.planning.ai.timeout-seconds:60}") timeout: Long,
+        @Value("\${finflow.planning.ai.responses-uri}") endpoint: URI,
     ): PlanAdvisor {
         require(timeout in 1..180) { "Timeout da IA deve estar entre 1 e 180 segundos" }
-        return OpenAiPlanAdvisor(json, key, model, enabled, Duration.ofSeconds(timeout))
+        return OpenAiPlanAdvisor(json, key, model, enabled, Duration.ofSeconds(timeout), endpoint)
     }
 
     @Bean

@@ -14,7 +14,9 @@ data class CreateObligationRequestBody(
     val name: String,
     val type: ObligationType,
     @field:Valid val amount: MoneyInputBody,
-    val dueDate: LocalDate,
+    val dueDate: LocalDate? = null,
+    val recurring: Boolean = false,
+    val dueDay: Int? = null,
 )
 
 fun CreateObligationRequestBody.toCommand(): CreateObligationRequest =
@@ -23,4 +25,6 @@ fun CreateObligationRequestBody.toCommand(): CreateObligationRequest =
         type = type,
         amount = amount.toCommand(),
         dueDate = dueDate,
+        recurring = recurring,
+        dueDay = dueDay,
     )

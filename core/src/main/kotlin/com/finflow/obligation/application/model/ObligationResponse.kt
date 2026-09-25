@@ -12,5 +12,7 @@ data class ObligationResponse(
     val type: ObligationType,
     val amount: MoneyOutput,
     val dueDate: LocalDate,
+    val recurring: Boolean,
+    val dueDay: Int?,
     val status: ObligationStatus,
 )

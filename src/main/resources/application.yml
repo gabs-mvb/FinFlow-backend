@@ -46,6 +46,7 @@ finflow:
       enabled: ${PLANNING_AI_ENABLED:false}
       api-key: ${OPENAI_API_KEY:}
       model: ${OPENAI_MODEL:}
+      responses-uri: https://api.openai.com/v1/responses
       timeout-seconds: ${PLANNING_AI_TIMEOUT_SECONDS:60}
   security:
     allowed-origins: ${ALLOWED_ORIGINS}

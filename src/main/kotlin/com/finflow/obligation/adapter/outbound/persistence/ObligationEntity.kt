@@ -30,6 +30,10 @@ class ObligationEntity(
     var currency: String = "BRL",
     @Column(name = "due_date", nullable = false)
     var dueDate: LocalDate = LocalDate.now(),
+    @Column(nullable = false)
+    var recurring: Boolean = false,
+    @Column(name = "due_day")
+    var dueDay: Int? = null,
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 24)
     var status: ObligationStatus = ObligationStatus.PENDING,

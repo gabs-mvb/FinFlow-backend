@@ -32,7 +32,17 @@ class ObligationService(
                     obligationType = request.type,
                     amount = money.amount,
                     currency = money.currency.currencyCode,
-                    dueDate = request.dueDate,
+                    dueDate =
+                        if (request.recurring) {
+                            Obligation.firstDueDate(
+                                OffsetDateTime.now(clock).toLocalDate(),
+                                requireNotNull(request.dueDay),
+                            )
+                        } else {
+                            requireNotNull(request.dueDate)
+                        },
+                    recurring = request.recurring,
+                    dueDay = request.dueDay,
                     createdAt = now,
                     updatedAt = now,
                 ),
@@ -56,7 +66,17 @@ class ObligationService(
                     obligationType = request.type,
                     amount = money.amount,
                     currency = money.currency.currencyCode,
-                    dueDate = request.dueDate,
+                    dueDate =
+                        if (request.recurring) {
+                            Obligation.firstDueDate(
+                                OffsetDateTime.now(clock).toLocalDate(),
+                                requireNotNull(request.dueDay),
+                            )
+                        } else {
+                            requireNotNull(request.dueDate)
+                        },
+                    recurring = request.recurring,
+                    dueDay = request.dueDay,
                     status = request.status,
                     updatedAt = OffsetDateTime.now(clock),
                 ),
@@ -77,7 +97,8 @@ class ObligationService(
                 ?: throw ResourceNotFoundException("Obrigação não encontrada")
         val updated =
             obligation.copy(
-                status = ObligationStatus.PAID,
+                status = if (obligation.recurring) ObligationStatus.PENDING else ObligationStatus.PAID,
+                dueDate = if (obligation.recurring) obligation.nextDueDate() else obligation.dueDate,
                 updatedAt = OffsetDateTime.now(clock),
             )
         auditService.record("OBLIGATION_PAID", "OBLIGATION", id)

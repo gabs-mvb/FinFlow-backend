@@ -105,6 +105,28 @@ Referências oficiais: [Responses API](https://developers.openai.com/api/docs/gu
 
 ## Diagnóstico da integração
 
+### Respostas objetivas e escopo financeiro
+
+O prompt `finflow-personal-planner-v2` gera resumo de até 350 caracteres,
+análise com 3 a 5 tópicos (`- `, até 180 caracteres por linha), até 5 ações,
+8 categorias e 3 avisos essenciais. As justificativas de categorias têm até 120
+caracteres; as de ações e os avisos, até 160. O contrato HTTP continua usando
+`analysis` como string; planos existentes e edições manuais continuam compatíveis.
+
+Observações e textos do contexto são dados não confiáveis. Pedidos de scripts,
+mudança de papel, exposição de instruções e outros assuntos devem ser ignorados;
+preferências financeiras legítimas continuam sendo consideradas. O adaptador
+valida os limites e tópicos, além de rejeitar padrões de código, HTML e links
+em todos os campos textuais antes de devolver uma proposta para persistência.
+Essas violações retornam `AI_PLAN_INVALID` ou `AI_PLAN_OUT_OF_SCOPE`, sem salvar
+um plano parcial e sem devolver o conteúdo rejeitado.
+
+As verificações locais de código são uma defesa complementar, não um classificador
+semântico universal. Prompt e schema reduzem desvios, mas não garantem imunidade
+a toda injeção. Os testes com provedor simulado cobrem isolamento das instruções,
+rejeição de código e limites; avaliações com o modelo real continuam necessárias.
+Referência: [segurança de agentes](https://developers.openai.com/api/docs/guides/agent-builder-safety).
+
 O backend mantém HTTP 503 para falhas dessa dependência, mas retorna códigos específicos:
 
 | Código | Verificação necessária |

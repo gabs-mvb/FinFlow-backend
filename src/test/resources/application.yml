@@ -15,6 +15,9 @@ jwt:
   expiration: 86400000
 
 finflow:
+  planning:
+    ai:
+      responses-uri: http://127.0.0.1:1/responses
   security:
     allowed-origins: http://localhost:3000
   open-finance:

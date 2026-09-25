@@ -147,13 +147,12 @@ class FinancialPlanService(
             }
         val obligations =
             obligationRepository
-                .findAllByUserIdAndStatusAndDueDateBetween(
-                    currentUser.id(),
-                    ObligationStatus.PENDING,
-                    asOf,
-                    nextIncomeDate.minusDays(1),
-                ).filter { it.currency == profile.currency }
-        val committed = obligations.sumOf { it.amount }
+                .findAllByUserId(currentUser.id())
+                .filter { it.currency == profile.currency && it.status == ObligationStatus.PENDING }
+        val committed =
+            obligations.sumOf { obligation ->
+                obligation.occurrencesUntil(nextIncomeDate).count { it >= asOf }.toBigDecimal() * obligation.amount
+            }
         val startOfMonth = asOf.withDayOfMonth(1).atStartOfDay().atOffset(ZoneOffset.UTC)
         val endOfDay =
             asOf

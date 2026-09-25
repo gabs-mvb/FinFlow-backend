@@ -13,5 +13,7 @@ internal fun Obligation.toResponse(): ObligationResponse =
         type = obligationType,
         amount = Money(amount, Currency.getInstance(currency)).toOutput(),
         dueDate = dueDate,
+        recurring = recurring,
+        dueDay = dueDay,
         status = status,
     )
