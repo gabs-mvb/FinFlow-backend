@@ -1,4 +1,4 @@
-name: Build and publish FinFlow Backend
+name: Build and deploy FinFlow Backend
 
 on:
   pull_request:
@@ -15,9 +15,14 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+
+  # ============================================================
+  # 1. TESTES
+  # ============================================================
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
     steps:
       - uses: actions/checkout@v4
 
@@ -40,6 +45,10 @@ jobs:
             build/reports/tests/
             core/build/reports/tests/
 
+
+  # ============================================================
+  # 2. BUILD DA IMAGEM + PUSH PARA GHCR
+  # ============================================================
   image:
     needs: test
     runs-on: ubuntu-latest
@@ -51,13 +60,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Mostrar IDs do GitHub
-        run: |
-          echo "OWNER_ID=${{ github.repository_owner_id }}"
-          echo "REPO_ID=${{ github.repository_id }}"
-          echo "REPOSITORY=${{ github.repository }}"
-          echo "REF=${{ github.ref }}"
 
       - name: Define image name
         id: image
@@ -79,11 +81,190 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+
           tags: |
             ${{ steps.image.outputs.name }}:latest
             ${{ steps.image.outputs.name }}:sha-${{ github.sha }}
+
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
+
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+
+  # ============================================================
+  # 3. DEPLOY NA EC2 VIA AWS SYSTEMS MANAGER
+  # ============================================================
+  deploy:
+    needs: image
+
+    # Não faz deploy durante Pull Request.
+    # Faz deploy somente quando estamos na main.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+
+      # --------------------------------------------------------
+      # GitHub -> AWS usando OIDC
+      # Não existe Access Key/Secret no GitHub.
+      # --------------------------------------------------------
+      - name: Authenticate with AWS
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: sa-east-1
+          role-session-name: FinFlow-${{ github.run_id }}
+
+      # --------------------------------------------------------
+      # Envia o comando para a EC2 usando SSM
+      # --------------------------------------------------------
+      - name: Deploy backend via SSM
+        env:
+          INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+
+        shell: bash
+
+        run: |
+          set -euo pipefail
+
+          DEPLOY_SCRIPT=$(cat <<'EOF'
+          set -euo pipefail
+
+          echo "========================================"
+          echo "FinFlow - iniciando deploy"
+          echo "========================================"
+
+          cd /opt/finflow
+
+          echo ""
+          echo "Baixando nova imagem..."
+          sudo -H -u ubuntu docker compose pull backend
+
+          echo ""
+          echo "Recriando container..."
+          sudo -H -u ubuntu docker compose up -d --no-deps --force-recreate backend
+
+          echo ""
+          echo "Containers atuais:"
+          sudo -H -u ubuntu docker compose ps
+
+          echo ""
+          echo "Aguardando backend iniciar..."
+          sleep 15
+
+          echo ""
+          echo "Verificando estado do container..."
+
+          RUNNING=$(docker inspect \
+            -f '{{.State.Running}}' \
+            finflow-backend)
+
+          if [ "$RUNNING" != "true" ]; then
+            echo "ERRO: finflow-backend não está executando."
+            docker logs --tail=100 finflow-backend
+            exit 1
+          fi
+
+          echo ""
+          echo "Backend está executando."
+
+          echo ""
+          echo "Removendo imagens Docker antigas..."
+          docker image prune -f
+
+          echo ""
+          echo "========================================"
+          echo "Deploy concluído"
+          echo "========================================"
+          EOF
+          )
+
+          PARAMETERS=$(jq -n \
+            --arg command "$DEPLOY_SCRIPT" \
+            '{commands: [$command]}')
+
+          echo "Enviando comando para EC2..."
+
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "FinFlow deploy - $GITHUB_SHA" \
+            --parameters "$PARAMETERS" \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "SSM Command ID: $COMMAND_ID"
+
+          echo ""
+          echo "Aguardando execução na EC2..."
+
+          if ! aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$INSTANCE_ID"
+          then
+            echo ""
+            echo "Deploy falhou."
+            echo ""
+            echo "Resultado do SSM:"
+
+            aws ssm get-command-invocation \
+              --command-id "$COMMAND_ID" \
+              --instance-id "$INSTANCE_ID"
+
+            exit 1
+          fi
+
+          echo ""
+          echo "Resultado do deploy:"
+
+          aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$INSTANCE_ID" \
+            --query '{
+              Status:Status,
+              Output:StandardOutputContent,
+              Error:StandardErrorContent
+            }'
+
+      # --------------------------------------------------------
+      # Verifica de fora da EC2 se a API realmente respondeu.
+      # --------------------------------------------------------
+      - name: Health check
+        shell: bash
+
+        run: |
+          echo "Verificando API..."
+
+          for i in {1..10}; do
+
+            if curl \
+              --silent \
+              --show-error \
+              --fail \
+              --max-time 10 \
+              https://finflow-api.duckdns.org/actuator/health
+            then
+
+              echo ""
+              echo "FinFlow está online."
+              exit 0
+
+            fi
+
+            echo "Tentativa $i/10 falhou. Aguardando..."
+            sleep 5
+
+          done
+
+          echo ""
+          echo "API não respondeu ao health check."
+          exit 1
