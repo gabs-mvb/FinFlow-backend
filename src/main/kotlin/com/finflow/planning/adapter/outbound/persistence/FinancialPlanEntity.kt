@@ -38,7 +38,13 @@ class FinancialPlanEntity(
     var projectedShortfall: BigDecimal = BigDecimal.ZERO,
     @Column(name = "daily_spending_limit", nullable = false, precision = 19, scale = 2)
     var dailySpendingLimit: BigDecimal = BigDecimal.ZERO,
-    @Column(nullable = false, length = 2000) var warnings: String = "",
+    @Column(nullable = false, columnDefinition = "text") var warnings: String = "",
     @Column(name = "allocation_plan", nullable = false, length = 2000) var allocationPlan: String = "",
     @Column(name = "generated_at", nullable = false) var generatedAt: OffsetDateTime = OffsetDateTime.now(),
+    @Column(nullable = false) var revision: Int = 0,
+    @Column(name = "updated_at") var updatedAt: OffsetDateTime? = null,
+    @Column(name = "plan_details", columnDefinition = "text") var planDetails: String? = null,
+    @Column(name = "total_balance_snapshot", precision = 19, scale = 2) var totalBalanceSnapshot: BigDecimal? = null,
+    @Column(name = "reserve_balance_snapshot", precision = 19, scale = 2) var reserveBalanceSnapshot: BigDecimal? = null,
+    @Column(name = "reserve_target_snapshot", precision = 19, scale = 2) var reserveTargetSnapshot: BigDecimal? = null,
 )

@@ -60,7 +60,9 @@ class ApiExceptionHandler {
         exception: HttpMessageNotReadableException,
         request: HttpServletRequest,
     ): ResponseEntity<ProblemDetail> {
-        logger.debug("Corpo de requisição inválido em {}", request.requestURI, exception)
+        if (org.slf4j.MDC.get("onboardingRequestId") == null) {
+            logger.debug("Corpo de requisição inválido em {}", request.requestURI, exception)
+        }
         return problem(
             HttpStatus.BAD_REQUEST,
             "MALFORMED_REQUEST_BODY",
@@ -90,7 +92,9 @@ class ApiExceptionHandler {
         exception: DataIntegrityViolationException,
         request: HttpServletRequest,
     ): ResponseEntity<ProblemDetail> {
-        logger.warn("Conflito de integridade em {}", request.requestURI, exception)
+        if (org.slf4j.MDC.get("onboardingRequestId") == null) {
+            logger.warn("Conflito de integridade em {}", request.requestURI, exception)
+        }
         return problem(
             HttpStatus.CONFLICT,
             "DATA_CONFLICT",
@@ -128,7 +132,9 @@ class ApiExceptionHandler {
         exception: Exception,
         request: HttpServletRequest,
     ): ResponseEntity<ProblemDetail> {
-        logger.error("Falha inesperada em {}", request.requestURI, exception)
+        if (org.slf4j.MDC.get("onboardingRequestId") == null) {
+            logger.error("Falha inesperada em {}", request.requestURI, exception)
+        }
         return problem(
             HttpStatus.INTERNAL_SERVER_ERROR,
             "INTERNAL_ERROR",
@@ -153,6 +159,9 @@ class ApiExceptionHandler {
         properties: Map<String, Any> = emptyMap(),
     ): ResponseEntity<ProblemDetail> {
         val problem = ProblemDetail.forStatusAndDetail(status, detail)
+        if (org.slf4j.MDC.get("onboardingRequestId") != null) {
+            request.setAttribute("onboardingErrorCode", code)
+        }
         problem.title = code
         problem.setProperty("code", code)
         problem.setProperty("path", request.requestURI)

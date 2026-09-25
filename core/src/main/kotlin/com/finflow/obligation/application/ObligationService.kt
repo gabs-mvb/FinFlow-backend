@@ -3,6 +3,7 @@ package com.finflow.obligation.application
 import com.finflow.audit.application.port.inbound.AuditUseCases
 import com.finflow.obligation.application.model.CreateObligationRequest
 import com.finflow.obligation.application.model.ObligationResponse
+import com.finflow.obligation.application.model.UpdateObligationRequest
 import com.finflow.obligation.application.port.inbound.ObligationUseCases
 import com.finflow.obligation.application.port.outbound.ObligationRepository
 import com.finflow.obligation.domain.Obligation
@@ -37,6 +38,30 @@ class ObligationService(
                 ),
             )
         auditService.record("OBLIGATION_CREATED", "OBLIGATION", saved.id)
+        return saved.toResponse()
+    }
+
+    override fun update(
+        id: UUID,
+        request: UpdateObligationRequest,
+    ): ObligationResponse {
+        val obligation =
+            repository.findByIdAndUserId(id, currentUser.id())
+                ?: throw ResourceNotFoundException("Obrigação não encontrada")
+        val money = request.amount.toMoney()
+        val saved =
+            repository.save(
+                obligation.copy(
+                    name = request.name.trim(),
+                    obligationType = request.type,
+                    amount = money.amount,
+                    currency = money.currency.currencyCode,
+                    dueDate = request.dueDate,
+                    status = request.status,
+                    updatedAt = OffsetDateTime.now(clock),
+                ),
+            )
+        auditService.record("OBLIGATION_UPDATED", "OBLIGATION", id)
         return saved.toResponse()
     }
 

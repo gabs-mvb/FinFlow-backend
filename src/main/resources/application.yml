@@ -41,6 +41,12 @@ jwt:
   expiration: ${JWT_EXPIRATION:86400000}
 
 finflow:
+  planning:
+    ai:
+      enabled: ${PLANNING_AI_ENABLED:false}
+      api-key: ${OPENAI_API_KEY:}
+      model: ${OPENAI_MODEL:}
+      timeout-seconds: ${PLANNING_AI_TIMEOUT_SECONDS:60}
   security:
     allowed-origins: ${ALLOWED_ORIGINS}
   open-finance:

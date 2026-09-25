@@ -4,6 +4,7 @@ import com.finflow.account.application.FinancialAccountService
 import com.finflow.account.application.model.CreateAccountRequest
 import com.finflow.account.application.model.FinancialAccountResponse
 import com.finflow.account.application.model.UpdateAccountBalanceRequest
+import com.finflow.account.application.model.UpdateAccountRequest
 import com.finflow.account.application.port.inbound.FinancialAccountUseCases
 import com.finflow.account.application.port.outbound.FinancialAccountRepository
 import com.finflow.account.domain.FinancialAccount
@@ -33,6 +34,7 @@ import com.finflow.goal.application.port.outbound.GoalRepository
 import com.finflow.obligation.application.ObligationService
 import com.finflow.obligation.application.model.CreateObligationRequest
 import com.finflow.obligation.application.model.ObligationResponse
+import com.finflow.obligation.application.model.UpdateObligationRequest
 import com.finflow.obligation.application.port.inbound.ObligationUseCases
 import com.finflow.obligation.application.port.outbound.ObligationRepository
 import com.finflow.onboarding.application.OnboardingService
@@ -47,15 +49,15 @@ import com.finflow.openfinance.application.port.outbound.OpenFinanceConsentRepos
 import com.finflow.planning.application.FinancialPlanService
 import com.finflow.planning.application.model.ActionIntentResponse
 import com.finflow.planning.application.model.FinancialPlanResponse
+import com.finflow.planning.application.model.UpdateFinancialPlanRequest
 import com.finflow.planning.application.port.inbound.FinancialPlanUseCases
 import com.finflow.planning.application.port.outbound.ActionIntentRepository
 import com.finflow.planning.application.port.outbound.FinancialPlanRepository
+import com.finflow.planning.application.port.outbound.PlanRevisionRepository
 import com.finflow.portfolio.application.PortfolioService
-import com.finflow.portfolio.application.model.ContributionAllocation
 import com.finflow.portfolio.application.model.PortfolioResponse
 import com.finflow.portfolio.application.model.ReplacePortfolioRequest
 import com.finflow.portfolio.application.port.inbound.PortfolioUseCases
-import com.finflow.portfolio.application.port.outbound.AllocationTargetRepository
 import com.finflow.portfolio.application.port.outbound.PortfolioPositionRepository
 import com.finflow.profile.application.FinancialProfileService
 import com.finflow.profile.application.model.FinancialProfileResponse
@@ -67,7 +69,6 @@ import com.finflow.report.application.MonthlyReportService
 import com.finflow.report.application.model.MonthlyFinancialReport
 import com.finflow.report.application.port.inbound.MonthlyReportUseCases
 import com.finflow.shared.application.port.outbound.CurrentUser
-import com.finflow.shared.domain.Money
 import com.finflow.transaction.application.FinancialTransactionService
 import com.finflow.transaction.application.model.FinancialTransactionResponse
 import com.finflow.transaction.application.model.ImportTransactionsRequest
@@ -106,6 +107,11 @@ class UseCaseConfiguration {
     ): FinancialAccountUseCases {
         val target = FinancialAccountService(currentUser, repository, auditService, clock)
         return object : FinancialAccountUseCases {
+            override fun update(
+                id: UUID,
+                request: UpdateAccountRequest,
+            ): FinancialAccountResponse = inTransaction(transactions) { target.update(id, request) }
+
             override fun create(request: CreateAccountRequest): FinancialAccountResponse =
                 inTransaction(transactions) { target.create(request) }
 
@@ -205,6 +211,11 @@ class UseCaseConfiguration {
     ): ObligationUseCases {
         val target = ObligationService(currentUser, repository, auditService, clock)
         return object : ObligationUseCases {
+            override fun update(
+                id: UUID,
+                request: UpdateObligationRequest,
+            ): ObligationResponse = inTransaction(transactions) { target.update(id, request) }
+
             override fun create(request: CreateObligationRequest): ObligationResponse =
                 inTransaction(transactions) { target.create(request) }
 
@@ -216,17 +227,23 @@ class UseCaseConfiguration {
 
     @Bean
     fun onboardingService(
+        events: com.finflow.onboarding.application.port.outbound.OnboardingEvents,
         currentUser: CurrentUser,
         profiles: FinancialProfileUseCases,
         users: UserRepository,
         transactions: TransactionTemplate,
     ): OnboardingUseCases {
-        val target = OnboardingService(currentUser, profiles, users)
+        val target = OnboardingService(currentUser, profiles, users, events)
         return object : OnboardingUseCases {
-            override fun status(): OnboardingStatus = inTransaction(transactions) { target.status() }
+            override fun status(): OnboardingStatus =
+                com.finflow.onboarding.adapter.outbound.logging.OnboardingOperationLog.observe("status") {
+                    inTransaction(transactions) { target.status() }
+                }
 
             override fun complete(request: UpsertFinancialProfileRequest): OnboardingStatus =
-                inTransaction(transactions) { target.complete(request) }
+                com.finflow.onboarding.adapter.outbound.logging.OnboardingOperationLog.observe("complete") {
+                    inTransaction(transactions) { target.complete(request) }
+                }
         }
     }
 
@@ -254,13 +271,13 @@ class UseCaseConfiguration {
 
     @Bean
     fun financialPlanService(
+        revisionRepository: PlanRevisionRepository,
         currentUser: CurrentUser,
         profileService: FinancialProfileUseCases,
         accountRepository: FinancialAccountRepository,
         transactionRepository: FinancialTransactionRepository,
         obligationRepository: ObligationRepository,
         debtRepository: DebtRepository,
-        portfolioService: PortfolioUseCases,
         consentService: OpenFinanceConsentUseCases,
         planRepository: FinancialPlanRepository,
         actionRepository: ActionIntentRepository,
@@ -276,14 +293,21 @@ class UseCaseConfiguration {
                 transactionRepository,
                 obligationRepository,
                 debtRepository,
-                portfolioService,
                 consentService,
                 planRepository,
                 actionRepository,
                 auditService,
                 clock,
+                revisionRepository,
             )
         return object : FinancialPlanUseCases {
+            override fun preview(asOf: LocalDate): FinancialPlanResponse = inTransaction(transactions) { target.preview(asOf) }
+
+            override fun update(
+                id: UUID,
+                request: UpdateFinancialPlanRequest,
+            ): FinancialPlanResponse = inTransaction(transactions) { target.update(id, request) }
+
             override fun generate(asOf: LocalDate): FinancialPlanResponse = inTransaction(transactions) { target.generate(asOf) }
 
             override fun latest(): FinancialPlanResponse? = inTransaction(transactions) { target.latest() }
@@ -299,20 +323,17 @@ class UseCaseConfiguration {
     fun portfolioService(
         currentUser: CurrentUser,
         positionRepository: PortfolioPositionRepository,
-        targetRepository: AllocationTargetRepository,
         auditService: AuditUseCases,
         clock: Clock,
         transactions: TransactionTemplate,
     ): PortfolioUseCases {
-        val target = PortfolioService(currentUser, positionRepository, targetRepository, auditService, clock)
+        val target = PortfolioService(currentUser, positionRepository, auditService, clock)
         return object : PortfolioUseCases {
             override fun replace(request: ReplacePortfolioRequest): PortfolioResponse =
                 inTransaction(transactions) { target.replace(request) }
 
             override fun get(): PortfolioResponse = inTransaction(transactions) { target.get() }
 
-            override fun allocateContribution(contribution: Money): List<ContributionAllocation> =
-                inTransaction(transactions) { target.allocateContribution(contribution) }
         }
     }
 
