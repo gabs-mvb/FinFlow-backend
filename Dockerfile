@@ -11,4 +11,12 @@ COPY --from=build /workspace/build/libs/finflow-backend.jar app.jar
 
 USER 10001
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+
+ENTRYPOINT [
+    "java",
+    "-XX:InitialRAMPercentage=20.0",
+    "-XX:MaxRAMPercentage=65.0",
+    "-XX:+UseG1GC",
+    "-jar",
+    "/app/app.jar"
+]
