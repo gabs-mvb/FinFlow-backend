@@ -1,112 +1,246 @@
-deploy:
-  needs: image
+name: Build and deploy FinFlow Backend
 
-  if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+on:
+  pull_request:
+    branches:
+      - main
 
-  runs-on: ubuntu-latest
-  timeout-minutes: 15
+  push:
+    branches:
+      - main
 
-  permissions:
-    id-token: write
-    contents: read
+  workflow_dispatch:
 
-  steps:
-    - name: Authenticate with AWS
-      uses: aws-actions/configure-aws-credentials@v6.3.0
-      with:
-        role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-        aws-region: sa-east-1
-        audience: sts.amazonaws.com
-        role-session-name: FinFlow-${{ github.run_id }}
+permissions:
+  contents: read
 
-    - name: Deploy backend via SSM
-      shell: bash
-      env:
-        INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+concurrency:
+  group: backend-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-      run: |
-        set -euo pipefail
+jobs:
 
-        DEPLOY_SCRIPT=$(cat <<'EOF'
-        set -euo pipefail
+  # ============================================================
+  # TESTES
+  # ============================================================
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
 
-        echo "========================================"
-        echo "FinFlow - iniciando deploy"
-        echo "========================================"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-        cd /opt/finflow
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
-        echo ""
-        echo "Baixando nova imagem..."
-        sudo -H -u ubuntu docker compose pull backend
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
 
-        echo ""
-        echo "Recriando container..."
-        sudo -H -u ubuntu docker compose up -d --no-deps --force-recreate backend
+      - name: Run backend and core tests
+        run: bash ./gradlew test --no-daemon
 
-        echo ""
-        echo "Containers atuais:"
-        sudo -H -u ubuntu docker compose ps
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            build/reports/tests/
+            core/build/reports/tests/
 
-        echo ""
-        echo "Aguardando backend iniciar..."
-        sleep 15
 
-        echo ""
-        echo "Verificando estado do container..."
+  # ============================================================
+  # BUILD E PUBLICAÇÃO DA IMAGEM
+  # ============================================================
+  image:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
 
-        RUNNING=$(docker inspect -f '{{.State.Running}}' finflow-backend)
+    permissions:
+      contents: read
+      packages: write
 
-        if [ "$RUNNING" != "true" ]; then
-          echo "ERRO: finflow-backend não está executando."
-          docker logs --tail=100 finflow-backend
-          exit 1
-        fi
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-        echo ""
-        echo "Backend está executando."
+      - name: Define image name
+        id: image
+        shell: bash
+        run: |
+          echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
 
-        echo ""
-        echo "========================================"
-        echo "Deploy concluído"
-        echo "========================================"
-        EOF
-        )
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-        PARAMETERS=$(jq -n \
-          --arg command "$DEPLOY_SCRIPT" \
-          '{commands: [$command]}')
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-        echo "Enviando comando para EC2..."
+      - name: Build and publish image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
 
-        COMMAND_ID=$(aws ssm send-command \
-          --instance-ids "$INSTANCE_ID" \
-          --document-name "AWS-RunShellScript" \
-          --comment "FinFlow deploy - $GITHUB_SHA" \
-          --parameters "$PARAMETERS" \
-          --query "Command.CommandId" \
-          --output text)
+          tags: |
+            ${{ steps.image.outputs.name }}:latest
+            ${{ steps.image.outputs.name }}:sha-${{ github.sha }}
 
-        echo "SSM Command ID: $COMMAND_ID"
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
 
-        echo "Aguardando execução..."
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-        if ! aws ssm wait command-executed \
-          --command-id "$COMMAND_ID" \
-          --instance-id "$INSTANCE_ID"
-        then
-          echo "Deploy falhou."
+
+  # ============================================================
+  # DEPLOY NA EC2 VIA AWS SSM
+  # ============================================================
+  deploy:
+    needs: image
+
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Authenticate with AWS
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: sa-east-1
+          audience: sts.amazonaws.com
+          role-session-name: FinFlow-${{ github.run_id }}
+
+      - name: Deploy backend via SSM
+        shell: bash
+
+        env:
+          INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+
+        run: |
+          set -euo pipefail
+
+          DEPLOY_SCRIPT=$(cat <<'EOF'
+          set -euo pipefail
+
+          echo "========================================"
+          echo "FinFlow - iniciando deploy"
+          echo "========================================"
+
+          cd /opt/finflow
+
+          echo ""
+          echo "Baixando nova imagem..."
+
+          sudo -H -u ubuntu docker compose pull backend
+
+          echo ""
+          echo "Recriando container..."
+
+          sudo -H -u ubuntu docker compose up \
+            -d \
+            --no-deps \
+            --force-recreate \
+            backend
+
+          echo ""
+          echo "Containers atuais:"
+
+          sudo -H -u ubuntu docker compose ps
+
+          echo ""
+          echo "Aguardando backend iniciar..."
+
+          sleep 15
+
+          echo ""
+          echo "Verificando estado do container..."
+
+          RUNNING=$(docker inspect \
+            -f '{{.State.Running}}' \
+            finflow-backend)
+
+          if [ "$RUNNING" != "true" ]; then
+
+            echo "ERRO: finflow-backend não está executando."
+
+            docker logs --tail=100 finflow-backend
+
+            exit 1
+
+          fi
+
+          echo ""
+          echo "Backend está executando."
+
+          echo ""
+          echo "========================================"
+          echo "Deploy concluído"
+          echo "========================================"
+          EOF
+          )
+
+          PARAMETERS=$(jq -n \
+            --arg command "$DEPLOY_SCRIPT" \
+            '{commands: [$command]}')
+
+          echo "Enviando comando para EC2..."
+
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "FinFlow deploy - $GITHUB_SHA" \
+            --parameters "$PARAMETERS" \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "SSM Command ID: $COMMAND_ID"
+
+          echo ""
+          echo "Aguardando execução na EC2..."
+
+          if ! aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$INSTANCE_ID"
+          then
+
+            echo ""
+            echo "Deploy falhou."
+            echo ""
+
+            aws ssm get-command-invocation \
+              --command-id "$COMMAND_ID" \
+              --instance-id "$INSTANCE_ID"
+
+            exit 1
+
+          fi
+
+          echo ""
+          echo "Resultado do deploy:"
 
           aws ssm get-command-invocation \
             --command-id "$COMMAND_ID" \
-            --instance-id "$INSTANCE_ID"
-
-          exit 1
-        fi
-
-        echo "Resultado do deploy:"
-
-        aws ssm get-command-invocation \
-          --command-id "$COMMAND_ID" \
-          --instance-id "$INSTANCE_ID" \
-          --query '{Status:Status,Output:StandardOutputContent,Error:StandardErrorContent}'
+            --instance-id "$INSTANCE_ID" \
+            --query '{
+              Status:Status,
+              Output:StandardOutputContent,
+              Error:StandardErrorContent
+            }'
