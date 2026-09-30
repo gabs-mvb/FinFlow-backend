@@ -2,6 +2,8 @@ package com.finflow.account.adapter.outbound.persistence
 
 import com.finflow.account.application.port.outbound.FinancialAccountRepository
 import com.finflow.account.domain.FinancialAccount
+import java.math.BigDecimal
+import java.time.OffsetDateTime
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
@@ -31,4 +33,14 @@ class JpaFinancialAccountRepository(
         delegate.findAllByUserIdAndCurrency(userId, currency).map {
             it.toDomain()
         }
+
+    override fun adjustTrackedBalance(
+        id: UUID,
+        userId: Int,
+        delta: BigDecimal,
+        syncedAt: OffsetDateTime,
+    ): FinancialAccount {
+        check(delegate.adjustTrackedBalance(id, userId, delta, syncedAt) == 1) { "Conta não encontrada para ajuste" }
+        return checkNotNull(delegate.findByIdAndUserId(id, userId)) { "Conta não encontrada após ajuste" }.toDomain()
+    }
 }

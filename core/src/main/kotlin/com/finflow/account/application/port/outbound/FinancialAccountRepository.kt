@@ -1,6 +1,8 @@
 package com.finflow.account.application.port.outbound
 
 import com.finflow.account.domain.FinancialAccount
+import java.math.BigDecimal
+import java.time.OffsetDateTime
 import java.util.UUID
 
 interface FinancialAccountRepository {
@@ -23,4 +25,12 @@ interface FinancialAccountRepository {
         userId: Int,
         currency: String,
     ): List<FinancialAccount>
+
+    /** Atomically adjusts the FinFlow-tracked balance for imported events. */
+    fun adjustTrackedBalance(
+        id: UUID,
+        userId: Int,
+        delta: BigDecimal,
+        syncedAt: OffsetDateTime,
+    ): FinancialAccount
 }

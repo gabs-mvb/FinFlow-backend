@@ -68,6 +68,7 @@ Cada pacote em `com.finflow` representa um módulo funcional:
 
 - `profile`: parâmetros do planejamento;
 - `account` e `transaction`: dados canônicos consolidados;
+- `financialevent`: adaptador de eventos Android já interpretados, convertido para a importação canônica de transações;
 - `obligation`, `debt` e `goal`: compromissos e objetivos;
 - `portfolio`: posições, alvos e distribuição de novos aportes;
 - `planning`: cálculo puro, persistência do plano e intenções;

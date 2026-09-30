@@ -16,7 +16,7 @@ data class UpsertFinancialProfileRequestBody(
     @field:Valid
     val monthlyIncome: MoneyInputBody,
     @field:Min(1)
-    @field:Max(28)
+    @field:Max(31)
     val payDay: Int,
     @field:Valid
     val essentialMonthlyExpenses: MoneyInputBody,

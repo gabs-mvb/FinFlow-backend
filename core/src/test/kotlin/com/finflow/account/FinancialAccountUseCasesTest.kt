@@ -151,4 +151,15 @@ private class MemoryAccounts : FinancialAccountRepository {
         userId: Int,
         currency: String,
     ) = findAllByUserId(userId).filter { it.currency == currency }
+
+    override fun adjustTrackedBalance(
+        id: UUID,
+        userId: Int,
+        delta: BigDecimal,
+        syncedAt: OffsetDateTime,
+    ): FinancialAccount {
+        val account = checkNotNull(findByIdAndUserId(id, userId))
+        return account.copy(availableBalance = account.availableBalance + delta, lastSyncedAt = syncedAt, updatedAt = syncedAt)
+            .also(::save)
+    }
 }

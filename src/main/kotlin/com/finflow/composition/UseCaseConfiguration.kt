@@ -25,6 +25,10 @@ import com.finflow.debt.application.model.CreateDebtRequest
 import com.finflow.debt.application.model.DebtResponse
 import com.finflow.debt.application.port.inbound.DebtUseCases
 import com.finflow.debt.application.port.outbound.DebtRepository
+import com.finflow.financialevent.application.FinancialEventService
+import com.finflow.financialevent.application.model.ImportFinancialEventsRequest
+import com.finflow.financialevent.application.model.ImportFinancialEventsResponse
+import com.finflow.financialevent.application.port.inbound.FinancialEventUseCases
 import com.finflow.goal.application.GoalService
 import com.finflow.goal.application.model.CreateGoalRequest
 import com.finflow.goal.application.model.GoalResponse
@@ -229,11 +233,21 @@ class UseCaseConfiguration {
     fun onboardingService(
         events: com.finflow.onboarding.application.port.outbound.OnboardingEvents,
         currentUser: CurrentUser,
-        profiles: FinancialProfileUseCases,
+        profileUseCases: FinancialProfileUseCases,
+        profileRepository: FinancialProfileRepository,
+        accountRepository: FinancialAccountRepository,
         users: UserRepository,
         transactions: TransactionTemplate,
     ): OnboardingUseCases {
-        val target = OnboardingService(currentUser, profiles, users, events)
+        val target =
+            OnboardingService(
+                currentUser,
+                profileUseCases,
+                profileRepository,
+                accountRepository,
+                users,
+                events,
+            )
         return object : OnboardingUseCases {
             override fun status(): OnboardingStatus =
                 com.finflow.onboarding.adapter.outbound.logging.OnboardingOperationLog.observe("status") {
@@ -375,13 +389,23 @@ class UseCaseConfiguration {
         repository: FinancialTransactionRepository,
         idempotencyRepository: IdempotencyRecordRepository,
         accountService: FinancialAccountUseCases,
+        accountRepository: FinancialAccountRepository,
         categorizer: TransactionCategorizer,
         auditService: AuditUseCases,
         clock: Clock,
         transactions: TransactionTemplate,
     ): FinancialTransactionUseCases {
         val target =
-            FinancialTransactionService(currentUser, repository, idempotencyRepository, accountService, categorizer, auditService, clock)
+            FinancialTransactionService(
+                currentUser,
+                repository,
+                idempotencyRepository,
+                accountService,
+                accountRepository,
+                categorizer,
+                auditService,
+                clock,
+            )
         return object : FinancialTransactionUseCases {
             override fun importTransactions(
                 idempotencyKey: String,
@@ -393,6 +417,22 @@ class UseCaseConfiguration {
                 to: OffsetDateTime,
                 category: TransactionCategory?,
             ): List<FinancialTransactionResponse> = inTransaction(transactions) { target.list(from, to, category) }
+        }
+    }
+
+    @Bean
+    fun financialEventService(
+        transactionService: FinancialTransactionUseCases,
+        planService: FinancialPlanUseCases,
+        clock: Clock,
+        transactions: TransactionTemplate,
+    ): FinancialEventUseCases {
+        val target = FinancialEventService(transactionService, planService, clock)
+        return object : FinancialEventUseCases {
+            override fun importBatch(
+                idempotencyKey: String,
+                request: ImportFinancialEventsRequest,
+            ): ImportFinancialEventsResponse = inTransaction(transactions) { target.importBatch(idempotencyKey, request) }
         }
     }
 }

@@ -2,7 +2,6 @@ package com.finflow.planning.domain
 
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 object FinancialPlanner {
@@ -11,8 +10,6 @@ object FinancialPlanner {
      * obrigações e caixa mínimo antes de dívida cara, reserva e investimento.
      */
     fun calculate(input: PlannerInput): PlannerResult {
-        require(input.payDay in 1..28) { "Dia de recebimento inválido" }
-        require(input.operatingBalance >= BigDecimal.ZERO) { "Saldo operacional não pode ser negativo" }
         val nextIncomeDate = nextIncomeDate(input.asOf, input.payDay)
         val remainingVariableBudget =
             (input.variableMonthlyBudget - input.variableSpentThisMonth)
@@ -75,15 +72,6 @@ object FinancialPlanner {
         )
     }
 
-    private fun nextIncomeDate(
-        asOf: LocalDate,
-        payDay: Int,
-    ): LocalDate =
-        if (asOf.dayOfMonth < payDay) {
-            asOf.withDayOfMonth(payDay)
-        } else {
-            asOf.plusMonths(1).withDayOfMonth(payDay)
-        }
 }
 
 private fun BigDecimal.moneyScale(): BigDecimal = setScale(2, RoundingMode.HALF_EVEN)

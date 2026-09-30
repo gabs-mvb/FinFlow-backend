@@ -53,9 +53,10 @@ As variáveis disponíveis estão em `.env.example`. O Compose sobe somente o Po
 2. Cadastre ou sincronize contas em `/api/v1/accounts`.
 3. Registre obrigações e dívidas em `/api/v1/obligations` e `/api/v1/debts`.
 4. Importe transações por `POST /api/v1/transactions/imports`, sempre com `Idempotency-Key`.
-5. Opcionalmente configure carteira, metas e consentimentos.
-6. Gere `POST /api/v1/plans` e consulte `GET /api/v1/plans/latest`.
-7. Feche o mês por `GET /api/v1/reports/monthly?year=2026&month=7`.
+5. O app Android pode enviar eventos já interpretados por `POST /api/v1/financial-events/batch`, com a conta explícita, `fingerprint` estável e `Idempotency-Key`.
+6. Opcionalmente configure carteira, metas e consentimentos.
+7. Gere `POST /api/v1/plans` e consulte `GET /api/v1/plans/latest`.
+8. Feche o mês por `GET /api/v1/reports/monthly?year=2026&month=7`.
 
 Exemplo de perfil:
 
@@ -84,6 +85,7 @@ Invoke-RestMethod -Method Put -Uri http://localhost:8080/api/v1/profile `
 | Perfil | `PUT/GET /api/v1/profile` |
 | Contas | `POST/GET /api/v1/accounts`, `PUT /api/v1/accounts/{id}`, `PATCH /api/v1/accounts/{id}/balance` |
 | Transações | `POST /api/v1/transactions/imports`, `GET /api/v1/transactions` |
+| Eventos financeiros mobile | `POST /api/v1/financial-events/batch` |
 | Obrigações | `POST/GET /api/v1/obligations`, `PUT /api/v1/obligations/{id}`, `PATCH /api/v1/obligations/{id}/paid` |
 | Dívidas | `POST/GET /api/v1/debts`, `PATCH /api/v1/debts/{id}/paid` |
 | Metas | `POST/GET /api/v1/goals`, `PATCH /api/v1/goals/{id}/progress` |

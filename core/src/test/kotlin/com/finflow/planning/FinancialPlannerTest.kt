@@ -43,6 +43,16 @@ class FinancialPlannerTest {
     }
 
     @Test
+    fun `keeps forecasting when the tracked balance is below zero`() {
+        val result = FinancialPlanner.calculate(baseInput(operatingBalance = BigDecimal("-120.00")))
+
+        assertMoney("120.00", result.projectedShortfall)
+        assertMoney("0.00", result.freeRealBalance)
+        assertMoney("0.00", result.dailySpendingLimit)
+        assertTrue(result.warnings.any { it.contains("não cobre") })
+    }
+
+    @Test
     fun `pays high cost debt before reserve and investments`() {
         val result =
             FinancialPlanner.calculate(
@@ -74,6 +84,30 @@ class FinancialPlannerTest {
         assertMoney("3240.00", result.freeRealBalance)
     }
 
+    @Test
+    fun `pay day 31 uses the last day of shorter months`() {
+        assertEquals(
+            LocalDate.of(2027, 2, 28),
+            FinancialPlanner.calculate(
+                baseInput(
+                    operatingBalance = BigDecimal.ZERO,
+                    asOf = LocalDate.of(2027, 2, 20),
+                    payDay = 31,
+                ),
+            ).nextIncomeDate,
+        )
+        assertEquals(
+            LocalDate.of(2028, 2, 29),
+            FinancialPlanner.calculate(
+                baseInput(
+                    operatingBalance = BigDecimal.ZERO,
+                    asOf = LocalDate.of(2028, 1, 31),
+                    payDay = 31,
+                ),
+            ).nextIncomeDate,
+        )
+    }
+
     private fun baseInput(
         operatingBalance: BigDecimal,
         committedObligations: BigDecimal = BigDecimal.ZERO,
@@ -81,9 +115,11 @@ class FinancialPlannerTest {
         emergencyReserveBalance: BigDecimal = BigDecimal.ZERO,
         highCostDebtOutstanding: BigDecimal = BigDecimal.ZERO,
         investmentContributionRate: BigDecimal = BigDecimal("0.10"),
+        asOf: LocalDate = LocalDate.of(2026, 7, 15),
+        payDay: Int = 5,
     ) = PlannerInput(
-        asOf = LocalDate.of(2026, 7, 15),
-        payDay = 5,
+        asOf = asOf,
+        payDay = payDay,
         monthlyIncome = BigDecimal("7600.00"),
         essentialMonthlyExpenses = BigDecimal("1000.00"),
         variableMonthlyBudget = variableMonthlyBudget,

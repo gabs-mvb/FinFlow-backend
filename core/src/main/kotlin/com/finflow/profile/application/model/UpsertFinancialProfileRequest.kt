@@ -19,7 +19,7 @@ data class UpsertFinancialProfileRequest(
 ) {
     init {
         require(payDay >= 1) { "Valor inválido para payDay" }
-        require(payDay <= 28) { "Valor inválido para payDay" }
+        require(payDay <= 31) { "Valor inválido para payDay" }
         require(emergencyTargetMonths >= 1) { "Valor inválido para emergencyTargetMonths" }
         require(emergencyTargetMonths <= 24) { "Valor inválido para emergencyTargetMonths" }
         require(reserveContributionRate >= java.math.BigDecimal("0.0")) { "Valor inválido para reserveContributionRate" }

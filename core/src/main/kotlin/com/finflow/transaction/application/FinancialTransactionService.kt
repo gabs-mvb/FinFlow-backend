@@ -1,6 +1,7 @@
 package com.finflow.transaction.application
 
 import com.finflow.account.application.port.inbound.FinancialAccountUseCases
+import com.finflow.account.application.port.outbound.FinancialAccountRepository
 import com.finflow.audit.application.port.inbound.AuditUseCases
 import com.finflow.shared.application.model.toOutput
 import com.finflow.shared.application.port.outbound.CurrentUser
@@ -27,6 +28,7 @@ class FinancialTransactionService(
     private val repository: FinancialTransactionRepository,
     private val idempotencyRepository: IdempotencyRecordRepository,
     private val accountService: FinancialAccountUseCases,
+    private val accountRepository: FinancialAccountRepository,
     private val categorizer: TransactionCategorizer,
     private val auditService: AuditUseCases,
     private val clock: Clock,
@@ -44,7 +46,7 @@ class FinancialTransactionService(
         val account = accountService.getRequired(request.accountId)
         val keyHash = sha256(idempotencyKey)
         val requestHash = sha256(request.toString())
-        val operation = "TRANSACTION_IMPORT"
+        val operation = request.idempotencyOperation
         idempotencyRepository.findByUserIdAndOperationAndKeyHash(currentUser.id(), operation, keyHash)?.let { record ->
             if (record.requestHash != requestHash) {
                 throw ConflictException(
@@ -94,6 +96,17 @@ class FinancialTransactionService(
                 }
             }
         repository.saveAll(newTransactions)
+        if (request.adjustTrackedBalance && newTransactions.isNotEmpty()) {
+            val delta =
+                newTransactions.fold(java.math.BigDecimal.ZERO) { total, transaction ->
+                    total +
+                        when (transaction.transactionType) {
+                            com.finflow.transaction.domain.TransactionType.CREDIT -> transaction.amount
+                            com.finflow.transaction.domain.TransactionType.DEBIT -> transaction.amount.negate()
+                        }
+                }
+            accountRepository.adjustTrackedBalance(account.id, currentUser.id(), delta, now)
+        }
         idempotencyRepository.save(
             IdempotencyRecord(
                 userId = currentUser.id(),

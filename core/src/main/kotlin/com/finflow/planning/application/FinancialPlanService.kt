@@ -29,6 +29,7 @@ import com.finflow.planning.domain.PlannedAllocation
 import com.finflow.planning.domain.PlannerInput
 import com.finflow.planning.domain.PlannerResult
 import com.finflow.planning.domain.RiskLevel
+import com.finflow.planning.domain.nextIncomeDate
 import com.finflow.portfolio.application.model.ContributionAllocation
 import com.finflow.portfolio.domain.AssetClass
 import com.finflow.profile.application.port.inbound.FinancialProfileUseCases
@@ -139,12 +140,7 @@ class FinancialPlanService(
             accountsInCurrency
                 .filter { it.purpose == AccountPurpose.EMERGENCY_RESERVE }
                 .sumOf { it.availableBalance }
-        val nextIncomeDate =
-            if (asOf.dayOfMonth < profile.payDay) {
-                asOf.withDayOfMonth(profile.payDay)
-            } else {
-                asOf.plusMonths(1).withDayOfMonth(profile.payDay)
-            }
+        val nextIncomeDate = nextIncomeDate(asOf, profile.payDay)
         val obligations =
             obligationRepository
                 .findAllByUserId(currentUser.id())

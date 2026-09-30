@@ -13,7 +13,7 @@ import java.util.UUID
     name = "idempotency_records",
     uniqueConstraints = [
         UniqueConstraint(
-            name = "uk_idempotency_operation_key",
+            name = "uk_idempotency_user_operation_key",
             columnNames = ["user_id", "operation", "key_hash"],
         ),
     ],
