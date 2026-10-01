@@ -16,6 +16,8 @@ data class ImportTransactionsRequest(
      * balance. Other imports preserve their historical non-mutating behavior.
      */
     val adjustTrackedBalance: Boolean = false,
+    /** Credit-card purchases affect the expense ledger, not the bank's available cash. Server-only. */
+    val balanceExcludedExternalIds: Set<String> = emptySet(),
 ) {
     init {
         require(transactions.size in 1..1000) { "Tamanho inválido para transactions" }

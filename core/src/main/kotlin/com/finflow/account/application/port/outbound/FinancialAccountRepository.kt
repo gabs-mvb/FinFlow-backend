@@ -7,6 +7,7 @@ import java.util.UUID
 
 interface FinancialAccountRepository {
     fun save(value: FinancialAccount): FinancialAccount
+    fun deleteByIdAndUserId(id: UUID, userId: Int)
 
     fun existsByUserIdAndInstitutionIgnoreCaseAndExternalId(
         userId: Int,

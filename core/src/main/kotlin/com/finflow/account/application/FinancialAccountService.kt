@@ -107,6 +107,12 @@ class FinancialAccountService(
     override fun getRequired(id: UUID): FinancialAccount =
         repository.findByIdAndUserId(id, currentUser.id())
             ?: throw ResourceNotFoundException("Conta não encontrada")
+    override fun get(id: UUID): FinancialAccountResponse = getRequired(id).toResponse()
+    override fun delete(id: UUID) {
+        getRequired(id)
+        repository.deleteByIdAndUserId(id, currentUser.id())
+        auditService.record("ACCOUNT_DELETED", "FINANCIAL_ACCOUNT", id)
+    }
 }
 
 private fun FinancialAccount.toResponse(): FinancialAccountResponse =

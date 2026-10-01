@@ -5,4 +5,7 @@ enum class AccountType {
     SAVINGS,
     PAYMENT,
     INVESTMENT,
+    DIGITAL,
+    WALLET,
+    OTHER,
 }

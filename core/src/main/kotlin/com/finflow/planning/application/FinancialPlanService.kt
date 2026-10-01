@@ -62,6 +62,7 @@ class FinancialPlanService(
     private val auditService: AuditUseCases,
     private val clock: Clock,
     private val revisionRepository: PlanRevisionRepository,
+    private val onboarding: com.finflow.onboarding.application.port.outbound.UserOnboardingRepository,
 ) : FinancialPlanUseCases {
     private val variableCategories =
         setOf(
@@ -132,23 +133,32 @@ class FinancialPlanService(
         val currency = Currency.getInstance(profile.currency)
         val accountsInCurrency = accountRepository.findAllByUserIdAndCurrency(currentUser.id(), profile.currency)
         val totalBalance = accountsInCurrency.sumOf { it.availableBalance }
-        val operatingBalance =
+        val onboardingData = onboarding.findByUserId(currentUser.id())?.data
+        val incomeSchedule = onboardingData?.incomes?.firstOrNull()?.schedule ?: com.finflow.onboarding.domain.IncomeSchedule.DAY_OF_MONTH
+        val informedReserve = onboardingData?.profile?.reserveAmount ?: BigDecimal.ZERO
+        val operatingBalanceBeforeReserve =
             accountsInCurrency
                 .filter { it.purpose == AccountPurpose.OPERATING }
                 .sumOf { it.availableBalance }
-        val reserveBalance =
+        val explicitReserveBalance =
             accountsInCurrency
                 .filter { it.purpose == AccountPurpose.EMERGENCY_RESERVE }
                 .sumOf { it.availableBalance }
-        val nextIncomeDate = nextIncomeDate(asOf, profile.payDay)
+        // An informed reserve is a protected portion of already registered balances;
+        // it never creates a fictitious account or increases total wealth.
+        val additionalReserve = (informedReserve - explicitReserveBalance).max(BigDecimal.ZERO).min(operatingBalanceBeforeReserve.max(BigDecimal.ZERO))
+        val reserveBalance = explicitReserveBalance + additionalReserve
+        val operatingBalance = operatingBalanceBeforeReserve - additionalReserve
+        val nextIncomeDate = nextIncomeDate(asOf, profile.payDay, incomeSchedule)
         val obligations =
             obligationRepository
                 .findAllByUserId(currentUser.id())
                 .filter { it.currency == profile.currency && it.status == ObligationStatus.PENDING }
-        val committed =
+        val committedExpenses =
             obligations.sumOf { obligation ->
                 obligation.occurrencesUntil(nextIncomeDate).count { it >= asOf }.toBigDecimal() * obligation.amount
             }
+        val committed = committedExpenses + onboardingData?.cards.orEmpty().sumOf { it.usedLimit }
         val startOfMonth = asOf.withDayOfMonth(1).atStartOfDay().atOffset(ZoneOffset.UTC)
         val endOfDay =
             asOf
@@ -186,10 +196,13 @@ class FinancialPlanService(
                     emergencyReserveBalance = reserveBalance,
                     committedObligations = committed,
                     highCostDebtOutstanding = highCostDebt,
+                    incomeSchedule = incomeSchedule,
                 ),
             )
         val allocations = emptyList<ContributionAllocation>()
         val warnings = calculated.warnings.toMutableList()
+        if (incomeSchedule == com.finflow.onboarding.domain.IncomeSchedule.VARIABLE) warnings += "Renda variável: horizonte estimado de um mês, sem data garantida de recebimento"
+        if (incomeSchedule == com.finflow.onboarding.domain.IncomeSchedule.LAST_BUSINESS_DAY) warnings += "Último dia útil estimado considerando segunda a sexta, sem calendário de feriados"
         if (!consentService.hasActiveConsent()) {
             warnings += "Não há consentimento Open Finance ativo; os dados podem estar desatualizados"
         }

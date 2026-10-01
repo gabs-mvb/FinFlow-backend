@@ -23,4 +23,6 @@ interface FinancialAccountUseCases {
     fun list(): List<FinancialAccountResponse>
 
     fun getRequired(id: UUID): FinancialAccount
+    fun get(id: UUID): FinancialAccountResponse
+    fun delete(id: UUID)
 }

@@ -18,4 +18,5 @@ data class PlannerInput(
     val emergencyReserveBalance: BigDecimal,
     val committedObligations: BigDecimal,
     val highCostDebtOutstanding: BigDecimal,
+    val incomeSchedule: com.finflow.onboarding.domain.IncomeSchedule = com.finflow.onboarding.domain.IncomeSchedule.DAY_OF_MONTH,
 )

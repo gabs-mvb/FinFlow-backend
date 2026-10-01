@@ -10,7 +10,7 @@ object FinancialPlanner {
      * obrigações e caixa mínimo antes de dívida cara, reserva e investimento.
      */
     fun calculate(input: PlannerInput): PlannerResult {
-        val nextIncomeDate = nextIncomeDate(input.asOf, input.payDay)
+        val nextIncomeDate = nextIncomeDate(input.asOf, input.payDay, input.incomeSchedule)
         val remainingVariableBudget =
             (input.variableMonthlyBudget - input.variableSpentThisMonth)
                 .max(BigDecimal.ZERO)

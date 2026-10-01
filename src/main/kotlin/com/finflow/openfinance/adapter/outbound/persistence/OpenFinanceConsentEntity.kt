@@ -11,7 +11,7 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 @Entity
-@Table(name = "open_finance_consents")
+@Table(name = "open_finance_consents", uniqueConstraints = [jakarta.persistence.UniqueConstraint(name = "uk_consent_user_provider_external", columnNames = ["user_id", "provider", "external_consent_id"])])
 class OpenFinanceConsentEntity(
     @Column(name = "user_id", updatable = false)
     var userId: Int? = null,

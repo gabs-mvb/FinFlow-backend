@@ -100,7 +100,8 @@ echo -n "sua-chave-segura" | sha256sum
 - ✅ Tokens JWT com expiração configurável (24h por padrão)
 - ✅ Sessões **stateless**
 - ✅ CORS configurado
-- ✅ Endpoints públicos: `/api/auth/**`
+- ✅ Endpoints públicos: `POST /api/auth/login` e `POST /api/auth/register`
+- ✅ `/api/auth/me` requer JWT válido
 - ✅ Endpoints privados: requerem token JWT válido
 
 ### Fluxo de Autenticação
@@ -131,14 +132,11 @@ Cria tabela `users` com:
 - `created_at` - Data de criação
 - `active` - Status do usuário (ativo/inativo)
 
-### Integração com Segurança por API Key
+### Acesso pelo Android
 
-O sistema de autenticação JWT **coexiste** com a segurança por API Key existente:
+O backend autentica os usuários com `Authorization: Bearer <token>`. Não existe autenticação independente por `X-API-Key` na configuração atual. Não inclua o segredo de assinatura JWT no app.
 
-- **API Key** (`X-API-Key`): Usada para requisições de serviços/integrações
-- **JWT** (`Authorization: Bearer`): Usada para autenticação de usuários
-
-Ambas são suportadas independentemente.
+Login e cadastro não precisam de token e ignoram uma sessão anterior. As demais rotas exigem JWT válido. O app nativo não depende da lista CORS de origens permitidas. Um HTTP 401 no login exige verificar as credenciais e o ambiente usado pelo cadastro; um 401 em uma rota privada exige renovar a sessão fazendo login.
 
 ### Tratamento de Erros
 

@@ -49,6 +49,8 @@ As variáveis disponíveis estão em `.env.example`. O Compose sobe somente o Po
 
 ## Fluxo mínimo
 
+O Android nativo utiliza o [onboarding financeiro obrigatório](docs/ANDROID_ONBOARDING.md), com progresso persistido, isolamento por usuário, confirmação de notificações e funcionamento offline. Publique backend e migrations V8/V9 antes de usar o novo aplicativo.
+
 1. Configure `PUT /api/v1/profile`.
 2. Cadastre ou sincronize contas em `/api/v1/accounts`.
 3. Registre obrigações e dívidas em `/api/v1/obligations` e `/api/v1/debts`.

@@ -11,6 +11,7 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 interface SpringDataFinancialAccountRepository : JpaRepository<FinancialAccountEntity, UUID> {
+    fun deleteByIdAndUserId(id: UUID, userId: Int): Long
     fun existsByUserIdAndInstitutionIgnoreCaseAndExternalId(
         userId: Int,
         institution: String,

@@ -133,6 +133,7 @@ private class MemoryAccounts : FinancialAccountRepository {
     val values = linkedMapOf<UUID, FinancialAccount>()
 
     override fun save(value: FinancialAccount): FinancialAccount = value.also { values[it.id] = it }
+    override fun deleteByIdAndUserId(id: UUID, userId: Int) { if (values[id]?.userId == userId) values.remove(id) }
 
     override fun existsByUserIdAndInstitutionIgnoreCaseAndExternalId(
         userId: Int,

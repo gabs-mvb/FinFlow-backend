@@ -12,7 +12,7 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 @Entity
-@Table(name = "portfolio_positions")
+@Table(name = "portfolio_positions", uniqueConstraints = [jakarta.persistence.UniqueConstraint(name = "uk_portfolio_user_asset_code", columnNames = ["user_id", "asset_code"])])
 class PortfolioPositionEntity(
     @Column(name = "user_id", updatable = false)
     var userId: Int? = null,

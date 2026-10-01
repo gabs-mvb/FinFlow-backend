@@ -41,7 +41,10 @@ import com.finflow.obligation.application.model.ObligationResponse
 import com.finflow.obligation.application.model.UpdateObligationRequest
 import com.finflow.obligation.application.port.inbound.ObligationUseCases
 import com.finflow.obligation.application.port.outbound.ObligationRepository
-import com.finflow.onboarding.application.OnboardingService
+import com.finflow.onboarding.application.ProgressiveOnboardingService
+import com.finflow.onboarding.application.port.inbound.ProgressiveOnboardingUseCases
+import com.finflow.onboarding.application.port.outbound.UserOnboardingRepository
+import com.finflow.onboarding.domain.*
 import com.finflow.onboarding.application.model.OnboardingStatus
 import com.finflow.onboarding.application.port.inbound.OnboardingUseCases
 import com.finflow.openfinance.application.OpenFinanceConsentService
@@ -127,6 +130,8 @@ class UseCaseConfiguration {
             override fun list(): List<FinancialAccountResponse> = inTransaction(transactions) { target.list() }
 
             override fun getRequired(id: UUID): FinancialAccount = inTransaction(transactions) { target.getRequired(id) }
+            override fun get(id: UUID): FinancialAccountResponse = inTransaction(transactions) { target.get(id) }
+            override fun delete(id: UUID): Unit = inTransaction(transactions) { target.delete(id) }
         }
     }
 
@@ -155,6 +160,7 @@ class UseCaseConfiguration {
         passwordEncoder: PasswordHasher,
         authenticator: CredentialAuthenticator,
         transactions: TransactionTemplate,
+        onboardingRepository: UserOnboardingRepository,
     ): AuthenticationUseCases {
         val target = AuthenticationService(currentUser, userRepository, passwordEncoder, authenticator)
         return object : AuthenticationUseCases {
@@ -162,7 +168,9 @@ class UseCaseConfiguration {
 
             override fun login(request: LoginRequestDto): LoginResponseDto = inTransaction(transactions) { target.login(request) }
 
-            override fun register(request: RegisterRequestDto): UserResponseDto = inTransaction(transactions) { target.register(request) }
+            override fun register(request: RegisterRequestDto): UserResponseDto = inTransaction(transactions) {
+                target.register(request).also { onboardingRepository.save(UserOnboarding(userId = it.id)) }
+            }
         }
     }
 
@@ -231,33 +239,43 @@ class UseCaseConfiguration {
 
     @Bean
     fun onboardingService(
-        events: com.finflow.onboarding.application.port.outbound.OnboardingEvents,
-        currentUser: CurrentUser,
-        profileUseCases: FinancialProfileUseCases,
-        profileRepository: FinancialProfileRepository,
-        accountRepository: FinancialAccountRepository,
-        users: UserRepository,
+        progressive: ProgressiveOnboardingUseCases,
         transactions: TransactionTemplate,
     ): OnboardingUseCases {
-        val target =
-            OnboardingService(
-                currentUser,
-                profileUseCases,
-                profileRepository,
-                accountRepository,
-                users,
-                events,
-            )
         return object : OnboardingUseCases {
             override fun status(): OnboardingStatus =
                 com.finflow.onboarding.adapter.outbound.logging.OnboardingOperationLog.observe("status") {
-                    inTransaction(transactions) { target.status() }
+                    inTransaction(transactions) { progressive.status() }
                 }
 
             override fun complete(request: UpsertFinancialProfileRequest): OnboardingStatus =
                 com.finflow.onboarding.adapter.outbound.logging.OnboardingOperationLog.observe("complete") {
-                    inTransaction(transactions) { target.complete(request) }
+                    inTransaction(transactions) { progressive.finish() }
                 }
+        }
+    }
+
+    @Bean
+    fun progressiveOnboardingService(
+        currentUser: CurrentUser, users: UserRepository, repository: UserOnboardingRepository,
+        accounts: FinancialAccountUseCases, accountRepository: FinancialAccountRepository,
+        profiles: FinancialProfileUseCases,
+        obligations: ObligationUseCases, clock: Clock, transactions: TransactionTemplate,
+    ): ProgressiveOnboardingUseCases {
+        val target = ProgressiveOnboardingService(currentUser, users, repository, accounts, accountRepository, profiles, obligations, clock)
+        return object : ProgressiveOnboardingUseCases {
+            override fun status() = inTransaction(transactions) { target.status() }
+            override fun start() = inTransaction(transactions) { target.start() }
+            override fun goal(goals: List<FinancialObjective>) = inTransaction(transactions) { target.goal(goals) }
+            override fun income(incomes: List<IncomeSource>) = inTransaction(transactions) { target.income(incomes) }
+            override fun institutions(institutions: List<String>) = inTransaction(transactions) { target.institutions(institutions) }
+            override fun accounts(accounts: List<OnboardingAccount>) = inTransaction(transactions) { target.accounts(accounts) }
+            override fun cards(cards: List<OnboardingCard>) = inTransaction(transactions) { target.cards(cards) }
+            override fun profile(profile: InitialFinancialProfile) = inTransaction(transactions) { target.profile(profile) }
+            override fun automation(enabled: Boolean) = inTransaction(transactions) { target.automation(enabled) }
+            override fun finish() = com.finflow.onboarding.adapter.outbound.logging.OnboardingOperationLog.observe("complete") { inTransaction(transactions) { target.finish() } }
+            override fun listCards() = inTransaction(transactions) { target.listCards() }
+            override fun replaceCards(cards: List<OnboardingCard>) = inTransaction(transactions) { target.replaceCards(cards) }
         }
     }
 
@@ -298,6 +316,7 @@ class UseCaseConfiguration {
         auditService: AuditUseCases,
         clock: Clock,
         transactions: TransactionTemplate,
+        onboarding: UserOnboardingRepository,
     ): FinancialPlanUseCases {
         val target =
             FinancialPlanService(
@@ -313,6 +332,7 @@ class UseCaseConfiguration {
                 auditService,
                 clock,
                 revisionRepository,
+                onboarding,
             )
         return object : FinancialPlanUseCases {
             override fun preview(asOf: LocalDate): FinancialPlanResponse = inTransaction(transactions) { target.preview(asOf) }
@@ -394,6 +414,7 @@ class UseCaseConfiguration {
         auditService: AuditUseCases,
         clock: Clock,
         transactions: TransactionTemplate,
+        users: UserRepository,
     ): FinancialTransactionUseCases {
         val target =
             FinancialTransactionService(
@@ -410,7 +431,11 @@ class UseCaseConfiguration {
             override fun importTransactions(
                 idempotencyKey: String,
                 request: ImportTransactionsRequest,
-            ): ImportTransactionsResponse = inTransaction(transactions) { target.importTransactions(idempotencyKey, request) }
+            ): ImportTransactionsResponse = inTransaction(transactions) {
+                // Serializes concurrent retries even when they use different batch keys.
+                users.lockById(currentUser.id())
+                target.importTransactions(idempotencyKey, request)
+            }
 
             override fun list(
                 from: OffsetDateTime,
@@ -426,8 +451,13 @@ class UseCaseConfiguration {
         planService: FinancialPlanUseCases,
         clock: Clock,
         transactions: TransactionTemplate,
+        currentUser: CurrentUser,
+        users: UserRepository,
+        onboarding: UserOnboardingRepository,
+        accounts: FinancialAccountUseCases,
+        ledger: FinancialTransactionRepository,
     ): FinancialEventUseCases {
-        val target = FinancialEventService(transactionService, planService, clock)
+        val target = FinancialEventService(transactionService, planService, clock, currentUser, users, onboarding, accounts, ledger)
         return object : FinancialEventUseCases {
             override fun importBatch(
                 idempotencyKey: String,

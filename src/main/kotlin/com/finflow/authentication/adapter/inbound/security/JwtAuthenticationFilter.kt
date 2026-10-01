@@ -1,7 +1,6 @@
 package com.finflow.authentication.adapter.inbound.security
 
 import com.finflow.authentication.adapter.outbound.security.JwtTokenProvider
-import com.finflow.authentication.domain.User
 import io.jsonwebtoken.ExpiredJwtException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
@@ -21,6 +20,11 @@ class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider,
     private val userDetailsService: UserDetailsService,
 ) : OncePerRequestFilter() {
+    // Login authenticates credentials and issues a new token. A previous
+    // session must not participate in login or registration.
+    override fun shouldNotFilter(request: HttpServletRequest): Boolean =
+        request.method == "POST" && request.servletPath in setOf("/api/auth/login", "/api/auth/register")
+
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
         request: HttpServletRequest,

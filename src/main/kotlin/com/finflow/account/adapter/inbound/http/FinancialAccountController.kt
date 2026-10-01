@@ -5,6 +5,7 @@ import com.finflow.account.application.port.inbound.FinancialAccountUseCases
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -28,6 +29,9 @@ class FinancialAccountController(
 
     @GetMapping
     fun list(): List<FinancialAccountResponse> = service.list()
+    @GetMapping("/{id}") fun get(@PathVariable id: UUID): FinancialAccountResponse = service.get(id)
+    @DeleteMapping("/{id}") @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun delete(@PathVariable id: UUID) = service.delete(id)
 
     @PutMapping("/{id}")
     fun update(

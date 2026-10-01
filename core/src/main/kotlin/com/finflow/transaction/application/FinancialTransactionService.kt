@@ -98,7 +98,7 @@ class FinancialTransactionService(
         repository.saveAll(newTransactions)
         if (request.adjustTrackedBalance && newTransactions.isNotEmpty()) {
             val delta =
-                newTransactions.fold(java.math.BigDecimal.ZERO) { total, transaction ->
+                newTransactions.filter { it.externalId !in request.balanceExcludedExternalIds }.fold(java.math.BigDecimal.ZERO) { total, transaction ->
                     total +
                         when (transaction.transactionType) {
                             com.finflow.transaction.domain.TransactionType.CREDIT -> transaction.amount

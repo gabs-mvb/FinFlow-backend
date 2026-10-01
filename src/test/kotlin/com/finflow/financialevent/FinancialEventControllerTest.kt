@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.ObjectMapper
 import java.util.UUID
+import com.finflow.completeTestOnboarding
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -85,20 +86,24 @@ class FinancialEventControllerTest
             val otherToken = registerAndLogin()
 
             assertFalse(call("GET", "/api/v1/onboarding", token)["readyForDashboard"].asBoolean())
-            call("POST", "/api/v1/onboarding/complete", token, financialProfile())
+            call("POST", "/api/v1/onboarding/complete", token, financialProfile(), 400)
+            call("PUT", "/api/v1/profile", token, financialProfile())
             assertFalse(call("GET", "/api/v1/onboarding", token)["readyForDashboard"].asBoolean())
 
             createAccount(otherToken)
             assertFalse(call("GET", "/api/v1/onboarding", token)["readyForDashboard"].asBoolean())
 
             createAccount(token)
+            assertFalse(call("GET", "/api/v1/onboarding", token)["readyForDashboard"].asBoolean())
+            completeTestOnboarding(mvc, token)
             assertTrue(call("GET", "/api/v1/onboarding", token)["readyForDashboard"].asBoolean())
         }
 
         @Test
         fun `new events update the tracked balance and refresh an existing rule plan`() {
             val token = registerAndLogin()
-            call("POST", "/api/v1/onboarding/complete", token, financialProfile())
+            completeTestOnboarding(mvc, token)
+            call("PUT", "/api/v1/profile", token, financialProfile())
             val accountId = createAccount(token)
             call("POST", "/api/v1/plans", token)
 
@@ -158,6 +163,7 @@ class FinancialEventControllerTest
               "events":[
                 {
                   "fingerprint":"nubank-debit-1",
+                  "confidence":0.98,
                   "type":"DEBIT_PURCHASE",
                   "amount":32.40,
                   "currency":"BRL",
@@ -167,6 +173,7 @@ class FinancialEventControllerTest
                 },
                 {
                   "fingerprint":"nubank-pix-1",
+                  "confidence":0.98,
                   "type":"PIX_RECEIVED",
                   "amount":450.00,
                   "currency":"BRL",

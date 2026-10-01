@@ -32,7 +32,9 @@ class HexagonalJourneyTest
             val token = registerAndLogin()
             assertFalse(call("GET", "/api/v1/onboarding", token)["completed"].asBoolean())
             call("GET", "/api/v1/plans/latest", token, expected = 204)
-            call("POST", "/api/v1/onboarding/complete", token, profile)
+            call("POST", "/api/v1/onboarding/complete", token, profile, 400)
+            completeTestOnboarding(mvc, token, income = 7600)
+            call("PUT", "/api/v1/profile", token, profile)
             assertTrue(call("GET", "/api/auth/me", token)["onboardingCompleted"].asBoolean())
             // A repeated submission must not overwrite the existing profile.
             call("POST", "/api/v1/onboarding/complete", token, profile.replace("7600", "9999"))

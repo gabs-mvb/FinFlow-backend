@@ -36,6 +36,9 @@ data class FinancialEventItemBody(
     @field:Size(max = 180)
     val merchant: String? = null,
     val occurredAt: OffsetDateTime,
+    val confidence: Double = 0.0,
+    val confirmed: Boolean = false,
+    val cardLocalId: UUID? = null,
 )
 
 fun ImportFinancialEventsRequestBody.toCommand(): ImportFinancialEventsRequest =
@@ -50,6 +53,9 @@ fun ImportFinancialEventsRequestBody.toCommand(): ImportFinancialEventsRequest =
                     description = event.description,
                     merchant = event.merchant,
                     occurredAt = event.occurredAt,
+                    confidence = event.confidence,
+                    confirmed = event.confirmed,
+                    cardLocalId = event.cardLocalId,
                 )
             },
     )

@@ -11,6 +11,9 @@ data class FinancialEventItem(
     val description: String,
     val merchant: String? = null,
     val occurredAt: OffsetDateTime,
+    val confidence: Double = 0.0,
+    val confirmed: Boolean = false,
+    val cardLocalId: java.util.UUID? = null,
 ) {
     init {
         require(fingerprint.isNotBlank()) { "fingerprint não pode estar vazio" }
@@ -20,6 +23,8 @@ data class FinancialEventItem(
         require(merchant == null || merchant.length <= 180) { "Tamanho inválido para merchant" }
         require(amount.toMoney().isPositive()) { "O valor do evento deve ser maior que zero" }
         require(type != FinancialEventType.UNKNOWN) { "Eventos financeiros desconhecidos não podem ser sincronizados" }
+        require(confidence.isFinite() && confidence in 0.0..1.0) { "Confiança inválida" }
+        require(confirmed || (confidence >= 0.95 && type != FinancialEventType.CREDIT_CARD_PURCHASE)) { "Confirme a movimentação antes de sincronizar" }
     }
 
     /**

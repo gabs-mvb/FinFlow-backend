@@ -12,6 +12,7 @@ class JpaFinancialAccountRepository(
     private val delegate: SpringDataFinancialAccountRepository,
 ) : FinancialAccountRepository {
     override fun save(value: FinancialAccount): FinancialAccount = delegate.save(value.toEntity()).toDomain()
+    override fun deleteByIdAndUserId(id: UUID, userId: Int) { delegate.deleteByIdAndUserId(id, userId) }
 
     override fun existsByUserIdAndInstitutionIgnoreCaseAndExternalId(
         userId: Int,

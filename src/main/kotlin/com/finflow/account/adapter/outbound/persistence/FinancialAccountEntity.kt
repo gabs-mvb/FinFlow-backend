@@ -15,7 +15,7 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 @Entity
-@Table(name = "financial_accounts")
+@Table(name = "financial_accounts", uniqueConstraints = [jakarta.persistence.UniqueConstraint(name = "uk_account_user_institution_external", columnNames = ["user_id", "institution", "external_id"])])
 class FinancialAccountEntity(
     @Column(name = "user_id", updatable = false)
     var userId: Int? = null,

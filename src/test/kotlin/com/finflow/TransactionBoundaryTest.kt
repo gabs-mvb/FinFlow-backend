@@ -62,6 +62,8 @@ class TransactionBoundaryTest
         private val actions: ActionIntentRepository,
         private val profileUseCases: FinancialProfileUseCases,
         private val transactions: TransactionTemplate,
+        private val onboardingState: com.finflow.onboarding.application.port.outbound.UserOnboardingRepository,
+        private val progressive: com.finflow.onboarding.application.port.inbound.ProgressiveOnboardingUseCases,
     ) {
         @MockitoBean
         private lateinit var audit: AuditUseCases
@@ -176,18 +178,16 @@ class TransactionBoundaryTest
         @Test
         fun `onboarding and profile share one atomic transaction`() {
             val before = profiles.findByUserId(userId)
+            onboardingState.save(com.finflow.onboarding.domain.UserOnboarding(
+                userId = userId, status = com.finflow.onboarding.domain.OnboardingProgress.IN_PROGRESS,
+                currentStep = com.finflow.onboarding.domain.OnboardingStage.FINANCIAL_PROFILE,
+                data = com.finflow.onboarding.domain.OnboardingData(incomes = listOf(com.finflow.onboarding.domain.IncomeSource(amount = BigDecimal("1000.00"), schedule = com.finflow.onboarding.domain.IncomeSchedule.DAY_OF_MONTH, payDay = 5))),
+            ))
             assertFailsWith<IllegalStateException> {
-                onboarding.complete(
-                    UpsertFinancialProfileRequest(
-                        monthlyIncome = MoneyInput(BigDecimal("1000.00")),
-                        payDay = 5,
-                        essentialMonthlyExpenses = MoneyInput(BigDecimal("500.00")),
-                        variableMonthlyBudget = MoneyInput(BigDecimal("100.00")),
-                        minimumCashBuffer = MoneyInput(BigDecimal("50.00")),
-                    ),
-                )
+                progressive.profile(com.finflow.onboarding.domain.InitialFinancialProfile(BigDecimal.ZERO, com.finflow.onboarding.domain.EmergencyReserveStatus.NONE, BigDecimal.ZERO))
             }
             assertEquals(before, profiles.findByUserId(userId))
             assertFalse(users.findByEmail("rollback@finflow.test").orElseThrow().onboardingCompleted)
+            assertEquals(com.finflow.onboarding.domain.OnboardingStage.FINANCIAL_PROFILE, onboardingState.findByUserId(userId)?.currentStep)
         }
     }
